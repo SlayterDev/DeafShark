@@ -8,6 +8,6 @@
 
 import Foundation
 
-let (dst, errors) = DeafSharkToken.tokenize("let x = 5")
-
-print(dst.description)
+if let ast = "let x = 5 \n var y = 10".tokenize()?.parse() {
+	print(ast.description)
+}

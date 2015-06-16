@@ -176,7 +176,7 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			.match(/"^(\\n)+") {
 				tokens.append(.Newline)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
-				linepos += 0
+				linepos += $0.count - 1
 				line += $0.count - 1
 			}?
 			

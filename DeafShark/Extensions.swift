@@ -74,4 +74,20 @@ extension String {
 			return self
 		}
 	}
+	
+	func tokenize() -> DeafSharkLexicalRepresentation? {
+		let (rep, errors) = DeafSharkToken.tokenize(self)
+		if errors == nil {
+			return rep
+		} else {
+			return nil
+		}
+	}
+}
+
+extension DeafSharkLexicalRepresentation {
+	func parse() -> DSAST? {
+		let parser = DSParser(tokens: tokens, lineContext: context)
+		return parser.generateAST()
+	}
 }
