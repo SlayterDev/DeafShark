@@ -61,6 +61,22 @@ public class DSType: DSAST {
 	}
 }
 
+public class DSAssignment: DSAST {
+	var storage: DSExpr
+	var expression: DSExpr
+	
+	init(storage: DSExpr, expression: DSExpr) {
+		self.storage = storage
+		self.expression = expression
+		super.init(lineContext: nil)
+		self.children = [self.storage, self.expression]
+	}
+	
+	override public var description: String {
+		return "DeafSharkAssignment " + self.childDescriptions
+	}
+}
+
 public class DSDeclaration: DSAST {
 	var identifier: String
 	var isConstant: Bool
@@ -90,6 +106,50 @@ public class DSDeclaration: DSAST {
 	}
 }
 
+public class DSBinaryExpression: DSExpr {
+	let op: String
+	let lhs: DSExpr
+	let rhs: DSExpr
+	
+	init(op: String, lhs: DSExpr, rhs: DSExpr) {
+		self.op = op
+		self.lhs = lhs
+		self.rhs = rhs
+		super.init(assignable: false, lineContext: nil)
+		
+		switch lhs {
+		case let l as DSBinaryExpression:
+			self.children.extend(l.children)
+		default:
+			self.children.append(lhs)
+		}
+		
+		switch rhs {
+		case let r as DSBinaryExpression:
+			self.children.extend(r.children)
+		default:
+			self.children.append(rhs)
+		}
+	}
+	
+	override public var description: String {
+		return "DeafSharkBinaryOperation - op:\(op)" + self.childDescriptions
+	}
+}
+
+public class DSIdentifierString: DSExpr {
+	var name: String
+	
+	init(name: String, lineContext: LineContext) {
+		self.name = name
+		super.init(assignable: true, lineContext: lineContext)
+	}
+	
+	override public var description: String {
+		return "DeafSharkIdentifier - name:\(name)"
+	}
+}
+
 public class DSSignedIntegerLiteral: DSExpr {
 	let val: Int
 	init(val: Int, lineContext: LineContext?) {
@@ -111,17 +171,5 @@ public class DSFloatLiteral: DSExpr {
 	
 	override public var description: String {
 		return "DeafSharkFloatLiteral - val:\(val)"
-	}
-}
-
-public class DSIdentifierLiteral: DSExpr {
-	let name: String
-	init(name: String, lineContext: LineContext?) {
-		self.name = name
-		super.init(lineContext: lineContext)
-	}
-	
-	override public var description: String {
-		return "DeafSharkIdentiLiteral - name:\(name)"
 	}
 }

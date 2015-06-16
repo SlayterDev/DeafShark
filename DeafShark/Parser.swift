@@ -13,9 +13,69 @@ public class DSParser {
 	var lineContext: [LineContext]
 	lazy public private(set) var errors = [DSError]()
 	
+	var binaryOperatorPrecedence: Dictionary<String, Int> = [
+		"<<":   160,
+		">>":   160,
+		
+		"*":    150,
+		"/":    150,
+		"%":    150,
+		"&*":   150,
+		"&/":   150,
+		"&%":   150,
+		"&":    150,
+		
+		"+":    140,
+		"-":    140,
+		"&+":   140,
+		"&-":   140,
+		"|":    140,
+		"^":    140,
+		
+		"..":   135,
+		"...":  135,
+		
+		"is":   132,
+		"as":   132,
+		
+		"<":    130,
+		"<=":   130,
+		">":    130,
+		">=":   130,
+		"==":   130,
+		"!=":   130,
+		"===":  130,
+		"!==":  130,
+		"~=":   130,
+		
+		"&&":   120,
+		
+		"||":   110,
+		
+		"?":    100,
+		
+		"=":    90,
+		"*=":   90,
+		"/=":   90,
+		"%=":   90,
+		"+=":   90,
+		"-=":   90,
+		"<<=":  90,
+		">>=":  90,
+		"&=":   90,
+		"^=":   90,
+		"|=":   90,
+		"&&=":  90,
+		"||=":  90,
+	]
+	
 	init(tokens: [DeafSharkToken], lineContext: [LineContext] = []) {
 		self.tokens = tokens
 		self.lineContext = lineContext
+	}
+	
+	func getOperatorPrecedence(op: String) -> Int {
+		return self.binaryOperatorPrecedence[op]!
 	}
 	
 	func consumeToken() {
@@ -73,7 +133,15 @@ public class DSParser {
 			fallthrough
 		case .Identifier(_):
 			if let lhs = parsePrimary() {
-				return lhs
+				if tokens.count == 0 {
+					return lhs
+				}
+				switch tokens[0] {
+				case .InfixOperator("=") where lhs.isAssignable:
+					return parseAssignment(lhs)
+				default:
+					return parseOperationRHS(precedence: 0, lhs: lhs)
+				}
 			} else {
 				return nil
 			}
@@ -82,6 +150,66 @@ public class DSParser {
 			return nil
 		default:
 			errors.append(DSError(message: "Unexpected token \(tokens[0]) encountered", lineContext: self.lineContext[0]))
+			return nil
+		}
+	}
+	
+	func parseOperationRHS(precedence precedence: Int,  lhs: DSExpr) -> DSExpr? {
+		if tokens.count == 0 {
+			return lhs
+		}
+		
+		switch tokens[0] {
+		case .InfixOperator(let op):
+			let tokenPrecedence = getOperatorPrecedence(op)
+			
+			if tokenPrecedence < precedence {
+				return lhs
+			}
+			
+			consumeToken()
+			
+			if let rhs = parsePrimary() {
+				if tokens.count == 0 {
+					return DSBinaryExpression(op: op, lhs: lhs, rhs: rhs)
+				}
+				
+				switch tokens[0] {
+				case .InfixOperator(let nextOp):
+					let nextPrecedence = getOperatorPrecedence(nextOp)
+					
+					// next token is higher precedence
+					if tokenPrecedence < nextPrecedence {
+						if let newRhs = parseOperationRHS(precedence: tokenPrecedence, lhs: rhs) {
+							return parseOperationRHS(precedence: precedence + 1, lhs: DSBinaryExpression(op: op, lhs: lhs, rhs: newRhs))
+						} else {
+							return nil
+						}
+					}
+					return parseOperationRHS(precedence: precedence + 1, lhs: DSBinaryExpression(op: op, lhs: lhs, rhs: rhs))
+				default:
+					return DSBinaryExpression(op: op, lhs: lhs, rhs: rhs)
+				}
+			} else {
+				return nil
+			}
+		//TODO: Handle pre/postfix ops
+		default:
+			return lhs
+		}
+	}
+	
+	func parseAssignment(store: DSExpr) -> DSAssignment? {
+		switch tokens[0] {
+		case .InfixOperator("="):
+			consumeToken()
+			if let rhs = parseExpression() {
+				return DSAssignment(storage: store, expression: rhs)
+			} else {
+				return nil
+			}
+		default:
+			errors.append(DSError(message: "Missing expected '='", lineContext: self.lineContext[0]))
 			return nil
 		}
 	}
@@ -118,17 +246,14 @@ public class DSParser {
 			
 			if tokens.count > 0 {
 				switch tokens[0] {
-				case .InfixOperator(let string):
-					if string == "=" {
-						consumeToken()
-						if let assignment = parseExpression() {
-							declaration.assignment = assignment
-						} else {
-							return nil
-						}
+				case .InfixOperator("="):
+					consumeToken()
+					if let assignment = parseExpression() {
+						declaration.assignment = assignment
 					} else {
-						return nil // TODO: handle other ops
+						return nil
 					}
+				// TODO: handle other ops
 				default:
 					break
 				}
@@ -152,7 +277,11 @@ public class DSParser {
 	}
 	
 	func parseExpression() -> DSExpr? {
-		return parsePrimary()
+		if let primary = parsePrimary() {
+			return parseOperationRHS(precedence: 0, lhs: primary)
+		} else {
+			return nil
+		}
 	}
 	
 	func parsePrimary() -> DSExpr? {
@@ -188,13 +317,21 @@ public class DSParser {
 	
 	func parseIdentifierExpression() -> DSExpr? {
 		let context = self.lineContext[0]
+		var identifier: DSIdentifierString!
 		switch tokens[0] {
 		case .Identifier(let id):
 			consumeToken()
-			return DSIdentifierLiteral(name: id, lineContext: context)
+			identifier =  DSIdentifierString(name: id, lineContext: context)
 		default:
 			errors.append(DSError(message: "Missing expected identifier", lineContext: context))
 			return nil
+		}
+		
+		
+		switch tokens[0] {
+		//TODO: handle function calls
+		default:
+			return identifier
 		}
 	}
 }
