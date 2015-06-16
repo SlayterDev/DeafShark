@@ -14,6 +14,7 @@ may be). I plan for this language to be suitable for things like systems program
 experience the whole way but let's hope something semi useful comes out of it.
 
 **Implementation**
+
     [  Source File  ] -> [  Lexer  ] -> [  Parser  ] -> [  Compiler  ] -> [  Binary  ]
 
 Code will be written in source files which is chopped into a large array of tokens by the lexer. The parser then analyzes the tokens
@@ -26,7 +27,7 @@ LLVM IR "assembly" which will then be compiled into an executable binary.
     var y as Int;
     
     func add(Int x, Int y) -> Int {
-      return x + y
+      return x + y;
     }
 
 ### Aknowledgments
