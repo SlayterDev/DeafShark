@@ -19,7 +19,7 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 	
 	case VariableDeclaration, ConstantDeclaration
 	
-	case Identifier(String)
+	case Identifier(String), As
 	
 	case PrefixOperator(String), InfixOperator(String), PostfixOperator(String)
 	
@@ -59,7 +59,8 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			return string
 		case .Newline:
 			return "\n"
-		
+		case .As:
+			return "as"
 		}
 	}
 	
@@ -168,6 +169,13 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			// right brace `}`
 			.match(/"^\\}") {
 				tokens.append(.LeftBracket)
+				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
+				linepos += $0[0].characters.count
+			}?
+				
+			// as keyword
+			.match(/"^as") {
+				tokens.append(.As)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?

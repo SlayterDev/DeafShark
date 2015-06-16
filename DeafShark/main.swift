@@ -8,6 +8,6 @@
 
 import Foundation
 
-if let ast = "let x = 5 + 5 \n var y = 10\ny = 12 + 6 * 3 - 4".tokenize()?.parse() {
+if let ast = "let x as Int = 5 + 5".tokenize()?.parse() {
 	print(ast.description)
 }

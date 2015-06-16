@@ -59,6 +59,10 @@ public class DSType: DSAST {
 		self.identifier = identifier
 		super.init(lineContext: lineContext)
 	}
+	
+	override public var description: String {
+		return "DeafSharkType - type:\(identifier)"
+	}
 }
 
 public class DSAssignment: DSAST {

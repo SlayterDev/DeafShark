@@ -239,6 +239,14 @@ public class DSParser {
 		if let declaration = parseDeclaration() {
 			if tokens.count > 0 {
 				switch tokens[0] {
+				case .As:
+					consumeToken()
+					type = parseType()
+					if type == nil {
+						errors.append(DSError(message: "Missing type declaration.", lineContext: self.lineContext[0]))
+						return nil
+					}
+					declaration.type = type
 				default: // TODO: colon/as
 					break
 				}
@@ -260,6 +268,18 @@ public class DSParser {
 			}
 			return declaration
 		} else {
+			return nil
+		}
+	}
+	
+	func parseType() -> DSType? {
+		switch tokens[0] {
+		case .Identifier(let t):
+			let context = self.lineContext[0]
+			consumeToken()
+			return DSType(identifier: t, lineContext: context)
+		//TODO: void/tuples
+		default:
 			return nil
 		}
 	}
