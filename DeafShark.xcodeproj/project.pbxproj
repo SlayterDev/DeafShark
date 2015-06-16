@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		021861EF1B2F544F00D0ED84 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021861EE1B2F544F00D0ED84 /* main.swift */; };
+		021861F61B2F57C500D0ED84 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021861F51B2F57C500D0ED84 /* Extensions.swift */; };
+		021861F81B2F5D0400D0ED84 /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021861F71B2F5D0400D0ED84 /* Tokens.swift */; };
+		021861FA1B2F5D7800D0ED84 /* Tokenizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021861F91B2F5D7800D0ED84 /* Tokenizer.swift */; };
+		021861FC1B2F64E000D0ED84 /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021861FB1B2F64E000D0ED84 /* Error.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +29,10 @@
 /* Begin PBXFileReference section */
 		021861EB1B2F544F00D0ED84 /* DeafShark */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DeafShark; sourceTree = BUILT_PRODUCTS_DIR; };
 		021861EE1B2F544F00D0ED84 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		021861F51B2F57C500D0ED84 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		021861F71B2F5D0400D0ED84 /* Tokens.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tokens.swift; sourceTree = "<group>"; };
+		021861F91B2F5D7800D0ED84 /* Tokenizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tokenizer.swift; sourceTree = "<group>"; };
+		021861FB1B2F64E000D0ED84 /* Error.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Error.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +66,10 @@
 			isa = PBXGroup;
 			children = (
 				021861EE1B2F544F00D0ED84 /* main.swift */,
+				021861F51B2F57C500D0ED84 /* Extensions.swift */,
+				021861F71B2F5D0400D0ED84 /* Tokens.swift */,
+				021861F91B2F5D7800D0ED84 /* Tokenizer.swift */,
+				021861FB1B2F64E000D0ED84 /* Error.swift */,
 			);
 			path = DeafShark;
 			sourceTree = "<group>";
@@ -119,6 +131,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				021861EF1B2F544F00D0ED84 /* main.swift in Sources */,
+				021861FA1B2F5D7800D0ED84 /* Tokenizer.swift in Sources */,
+				021861F61B2F57C500D0ED84 /* Extensions.swift in Sources */,
+				021861FC1B2F64E000D0ED84 /* Error.swift in Sources */,
+				021861F81B2F5D0400D0ED84 /* Tokens.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

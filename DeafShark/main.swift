@@ -8,5 +8,6 @@
 
 import Foundation
 
-print("Hello, World!")
+let (dst, errors) = DeafSharkToken.tokenize("let x = 5")
 
+print(dst.description)

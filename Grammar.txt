@@ -1,0 +1,16 @@
+letter = "A" | "a" | ... "Z" | "z" | "_";
+digit = { "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" };
+identifier = letter { letter | digit };
+number_literal = digit | [ "." digit ];
+string_literal = """ letter { letter } """ | "'" letter { letter } "'";
+char_literal = "'" letter "'";
+literal = number_literal | string_literal | char_literal;
+binaryOp = "+" | "-" | "/" | "*";
+binary_expr = expression binaryOp expression;
+expression = binary_expr | function_call | identifier | literal;
+let_stat = "let" identifier "=" expression | "let" identifier "as" type;
+var_stat = "var" identifier "=" expression | "var" identifier "as" type;
+declaration = let_stat | var_stat
+function_call = identifier "(" [arguments] ")";
+statements = declaration | function_call
+type = Int | Float | String
