@@ -133,7 +133,7 @@ public class DSBinaryExpression: DSExpr {
 	}
 	
 	override public var description: String {
-		return "DeafSharkBinaryOperation - op:\(op)" + self.childDescriptions
+		return "DeafSharkBinaryOperation - op:\(op)" + "\n RH\(op): " + self.lhs.description + "\n LH\(op): " + self.rhs.description
 	}
 }
 
