@@ -263,3 +263,15 @@ public class DSFloatLiteral: DSExpr {
 		return "DeafSharkFloatLiteral - val:\(val)"
 	}
 }
+
+public class DSBooleanLiteral: DSExpr {
+	let val: Bool
+	init(val: Bool, lineContext: LineContext?) {
+		self.val = val
+		super.init(lineContext: lineContext)
+	}
+	
+	override public var description: String {
+		return "DeafSharkBooleanLiteral - val:\(val)"
+	}
+}

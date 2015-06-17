@@ -8,6 +8,6 @@
 
 import Foundation
 
-if let ast = "func add(x as Int, y as Int) -> Int { let a = x + y }".tokenize()?.parse() {
+if let ast = "func add(x as Int, y as Int) -> Int { let a = x + y }\nlet finished = NO".tokenize()?.parse() {
 	print(ast.description)
 }

@@ -318,7 +318,9 @@ public class DSParser {
 			fallthrough
 		case .FloatLiteral(_):
 			return parseNumberExpression()
-			//TODO: true/false
+		case .BooleanLiteral(let bool):
+			consumeToken()
+			return DSBooleanLiteral(val: bool, lineContext: context)
 		default:
 			errors.append(DSError(message: "\(tokens[0]) is not a DeafShark expression.", lineContext: context))
 			return nil

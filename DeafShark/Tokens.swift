@@ -16,7 +16,7 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 	case LeftBracket, LeftBrace, RightBracket, RightBrace
 	case Arrow, Semicolon, Comma
 	
-	case IntegerLiteral(Int), FloatLiteral(Float), StringLiteral(String)
+	case IntegerLiteral(Int), FloatLiteral(Float), StringLiteral(String), BooleanLiteral(Bool)
 	
 	case VariableDeclaration, ConstantDeclaration
 	
@@ -68,6 +68,8 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			return ";"
 		case .Comma:
 			return ","
+		case .BooleanLiteral(let bool):
+			return "\(bool)"
 		}
 	}
 	
@@ -124,6 +126,18 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			// as keyword
 			.match(/"^as") {
 				tokens.append(.As)
+				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
+				linepos += $0[0].characters.count
+			}?
+			// true keyword
+			.match(/"^(true|YES)") {
+				tokens.append(.BooleanLiteral(true))
+				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
+				linepos += $0[0].characters.count
+			}?
+			// false keyword
+			.match(/"^(false|NO)") {
+				tokens.append(.BooleanLiteral(false))
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
