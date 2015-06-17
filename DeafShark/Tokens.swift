@@ -14,6 +14,7 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 	case Function
 	
 	case LeftBracket, LeftBrace, RightBracket, RightBrace
+	case Arrow, Semicolon, Comma
 	
 	case IntegerLiteral(Int), FloatLiteral(Float), StringLiteral(String)
 	
@@ -61,6 +62,12 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			return "\n"
 		case .As:
 			return "as"
+		case .Arrow:
+			return "->"
+		case .Semicolon:
+			return ";"
+		case .Comma:
+			return ","
 		}
 	}
 	
@@ -93,6 +100,9 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
+			
+			// Language keywords
+			
 			// Match var decl
 			.match(/"^var(?!\(identifierRegex))") {
 				tokens.append(.VariableDeclaration)
@@ -107,11 +117,17 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			}?
 			// Match func decl
 			.match(/"^func(?!\(identifierRegex))") {
-				tokens.append(.VariableDeclaration)
+				tokens.append(.Function)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
-			
+			// as keyword
+			.match(/"^as") {
+				tokens.append(.As)
+				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
+				linepos += $0[0].characters.count
+			}?
+				
 			// Identifiers
 			
 			.match(/"^([\\+\\-]{2,})?\(identifierRegex)([\\+\\-]{2,})?"/"i") {
@@ -135,10 +151,22 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			}?
 				
 			// Operators and puctuation
-				
+			
+			// return type arrow
+			.match(/"^->") {
+				tokens.append(.Arrow)
+				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
+				linepos += $0[0].characters.count
+			}?
 			// infix operators
 			.match(/"^[\\+\\-/*<>=](=)?") {
 				tokens.append(.InfixOperator($0[0]))
+				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
+				linepos += $0[0].characters.count
+			}?
+			// comma
+			.match(/"^,") {
+				tokens.append(.Comma)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
@@ -168,14 +196,14 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			
 			// right brace `}`
 			.match(/"^\\}") {
-				tokens.append(.LeftBracket)
+				tokens.append(.RightBrace)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
-				
-			// as keyword
-			.match(/"^as") {
-				tokens.append(.As)
+			
+			// semicolon
+			.match(/"^(;)+") {
+				tokens.append(.Semicolon)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?

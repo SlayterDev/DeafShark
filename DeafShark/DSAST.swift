@@ -141,6 +141,92 @@ public class DSBinaryExpression: DSExpr {
 	}
 }
 
+public class DSFunctionType: DSType {
+	var parameterType: DSType
+	var returnType: DSType
+	
+	init(parameterType: DSType, returnType: DSType, lineContext: LineContext? = nil) {
+		self.parameterType = parameterType
+		self.returnType = returnType
+		super.init(identifier: "func", lineContext: lineContext)
+	}
+	
+	override public var description: String {
+		var description = "("
+		description += parameterType.description
+		description += " -> "
+		description += returnType.description
+		description += ")"
+		return description
+	}
+}
+
+public class DSFunctionParameter: DSDeclaration {}
+
+public class DSFunctionBody: DSBody {
+	init(_ body: DSBody, lineContext: LineContext?) {
+		super.init(lineContext: lineContext)
+		self.children = body.children
+		self.lineContext = body.lineContext
+	}
+	
+	override public var description: String {
+		return "DeafSharkFunctionBody" + self.childDescriptions
+	}
+}
+
+public class DSFunctionDeclaration: DSAST {
+	var prototype: DSFunctionPrototype
+	var body: DSFunctionBody?
+	
+	init(id: String, parameters: [DSDeclaration], returnType: DSType, body: DSFunctionBody?, lineContext: LineContext?) {
+		self.prototype = DSFunctionPrototype(id: id, parameters: parameters, returnType: returnType, lineContext: lineContext)
+		self.body = body
+		super.init(lineContext: lineContext)
+		self.children.append(self.prototype)
+		if let body = self.body {
+			self.children.append(body)
+		}
+	}
+	
+	override public var description: String {
+		return "DeafSharkFunctionDeclaration - \(self.prototype.identifier) -> \(self.prototype.type!.identifier)" + self.childDescriptions
+	}
+}
+
+public class DSFunctionPrototype: DSDeclaration {
+	var parameters: [DSDeclaration]
+	
+	init(id: String, parameters: [DSDeclaration], returnType: DSType, lineContext: LineContext?) {
+		self.parameters = parameters
+		super.init(id: id, type: returnType, lineContext: lineContext)
+	}
+	
+	override public var description: String {
+		var description = "DeafSharkFunctionPrototype - \(self.identifier)( "
+		for param in self.parameters {
+			description += param.identifier + " "
+		}
+		description += ") -> \(self.type!.identifier)" + self.childDescriptions
+		return description
+	}
+}
+
+public class DSCall: DSExpr {
+	let identifier: DSIdentifierString
+	
+	init(identifier: DSIdentifierString, arguments: [DSExpr]) {
+		self.identifier = identifier
+		super.init(lineContext: nil)
+		let args = arguments as [DSAST]
+		self.children.extend(args)
+	}
+	
+	override public var description: String {
+		return "DeafSharkFunctionCall - identifier:\(identifier.name)"
+	}
+}
+
 public class DSIdentifierString: DSExpr {
 	var name: String
 	

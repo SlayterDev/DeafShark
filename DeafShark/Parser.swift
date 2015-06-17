@@ -115,6 +115,8 @@ public class DSParser {
 				if errors.count > 0 {
 					return nil
 				}
+			} else if errors.count > 0 {
+				return nil
 			}
 		}
 		
@@ -145,6 +147,8 @@ public class DSParser {
 			} else {
 				return nil
 			}
+		case .Function:
+			return parseFunctionDeclaration()
 		case .Newline:
 			consumeToken()
 			return nil
@@ -234,9 +238,11 @@ public class DSParser {
 		return nil
 	}
 	
-	func parseStorageDeclaration() -> DSDeclaration? {
+	func parseStorageDeclaration(isFunctionParameter: Bool = false) -> DSDeclaration? {
 		var type: DSType?
-		if let declaration = parseDeclaration() {
+		let context = self.lineContext[0]
+		if let declarationID = parseDeclaration() {
+			let declaration = isFunctionParameter ? DSFunctionParameter(id: declarationID, lineContext: context) : DSDeclaration(id: declarationID, lineContext: context)
 			if tokens.count > 0 {
 				switch tokens[0] {
 				case .As:
@@ -247,7 +253,7 @@ public class DSParser {
 						return nil
 					}
 					declaration.type = type
-				default: // TODO: colon/as
+				default:
 					break
 				}
 			}
@@ -266,7 +272,7 @@ public class DSParser {
 					break
 				}
 			}
-			return declaration
+			return (isFunctionParameter) ? declaration as! DSFunctionParameter : declaration
 		} else {
 			return nil
 		}
@@ -284,12 +290,11 @@ public class DSParser {
 		}
 	}
 	
-	func parseDeclaration() -> DSDeclaration? {
+	func parseDeclaration() -> String? {
 		switch tokens[0] {
 		case .Identifier(let string):
 			consumeToken()
-			let declaration = DSDeclaration(id: string, lineContext: self.lineContext[0])
-			return declaration
+			return string
 		default:
 			errors.append(DSError(message: "Missing expected identifier.", lineContext: self.lineContext[0]))
 			return nil
@@ -320,6 +325,89 @@ public class DSParser {
 		}
 	}
 	
+	func parseFunctionDeclaration() -> DSFunctionDeclaration? {
+		let context = self.lineContext[0]
+		switch tokens[0] {
+		case .Function:
+			consumeToken()
+		default:
+			errors.append(DSError(message: "Missing expected 'func'.", lineContext: context))
+			return nil
+		}
+		
+		let functionId: String
+		switch tokens[0] {
+		case .Identifier(let string):
+			functionId = string
+			consumeToken()
+		default:
+			errors.append(DSError(message: "Missing expected identifier.", lineContext: context))
+			return nil
+		}
+		
+		switch tokens[0] {
+		case .LeftBracket:
+			consumeToken()
+		default:
+			errors.append(DSError(message: "Missing expected '('.", lineContext: context))
+		}
+		
+		let parameters = parseParams()
+		
+		let returnType: DSType
+		
+		let returnTypeContext = self.lineContext[0]
+		switch tokens[0] {
+		case .Arrow:
+			consumeToken()
+			if let type = parseType() {
+				returnType = type
+			} else {
+				return nil
+			}
+		default:
+			returnType = DSType(identifier: "void", lineContext: context)
+		}
+		
+		var body: DSFunctionBody?
+		if (tokens.isEmpty) {
+			errors.append(DSError(message: "Missing function body.", lineContext: returnTypeContext))
+			return nil
+		}
+		let bodyContext = self.lineContext[0]
+		switch tokens[0] {
+		case .LeftBrace:
+			if let closure = parseBody(true) {
+				body = DSFunctionBody(closure, lineContext: bodyContext)
+				fallthrough
+			} else {
+				return nil
+			}
+		default:
+			return DSFunctionDeclaration(id: functionId, parameters: parameters!, returnType: returnType, body: body, lineContext: context)
+		}
+	}
+	
+	func parseParams() -> [DSFunctionParameter]? {
+		var functionParameters: [DSFunctionParameter] = [DSFunctionParameter]()
+		
+		while true {
+			switch tokens[0] {
+			case .RightBracket:
+				consumeToken()
+				return functionParameters
+			case .Comma:
+				consumeToken()
+			default:
+				if let arg = parseStorageDeclaration(true) as? DSFunctionParameter {
+					functionParameters.append(arg)
+				} else {
+					return nil
+				}
+			}
+		}
+	}
+	
 	func parseNumberExpression() -> DSExpr? {
 		let context = self.lineContext[0]
 		switch tokens[0] {
@@ -347,9 +435,32 @@ public class DSParser {
 			return nil
 		}
 		
-		
+		if tokens.count == 0 {
+			return identifier
+		}
 		switch tokens[0] {
-		//TODO: handle function calls
+		case .LeftBracket:
+			consumeToken()
+			var args = [DSExpr]()
+			while true {
+				if tokens.count == 0 {
+					errors.append(DSError(message: "Missing expected '(' in function call", lineContext: context))
+					return nil
+				}
+				switch tokens[0] {
+				case .RightBracket:
+					consumeToken()
+					return DSCall(identifier: identifier, arguments: args)
+				case .Comma:
+					consumeToken()
+				default:
+					if let exp = parseExpression() {
+						args.append(exp)
+					} else {
+						return nil
+					}
+				}
+			}
 		default:
 			return identifier
 		}

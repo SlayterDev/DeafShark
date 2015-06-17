@@ -88,6 +88,13 @@ extension String {
 extension DeafSharkLexicalRepresentation {
 	func parse() -> DSAST? {
 		let parser = DSParser(tokens: tokens, lineContext: context)
-		return parser.generateAST()
+		if let AST = parser.generateAST() {
+			return AST
+		} else {
+			for error in parser.errors {
+				print(error.description)
+			}
+			return nil
+		}
 	}
 }
