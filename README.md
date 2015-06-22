@@ -23,11 +23,11 @@ LLVM IR "assembly" which will then be compiled into an executable binary.
 
 **Sample Syntax**
 
-    let x = 5 + 5;
-    var y as Int;
+    let x = 5 + 5
+    var y as Int
     
-    func add(Int x, Int y) -> Int {
-      return x + y;
+    func add(x as Int, y as Int) -> Int {
+      return x + y
     }
 
 ### Aknowledgments
