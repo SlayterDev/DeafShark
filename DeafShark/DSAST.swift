@@ -227,6 +227,22 @@ public class DSCall: DSExpr {
 	}
 }
 
+public class DSConditionalStatement: DSAST {
+	let cond: DSExpr
+	let body: DSBody
+	
+	init(condition: DSExpr, body: DSBody, lineContext: LineContext?) {
+		self.cond = condition
+		self.body = body
+		super.init(lineContext: lineContext)
+		self.lineContext = lineContext
+	}
+}
+
+public class DSIfStatement: DSConditionalStatement {}
+
+public class DSWhileStatement: DSConditionalStatement {}
+
 public class DSIdentifierString: DSExpr {
 	var name: String
 	

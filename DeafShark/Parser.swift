@@ -149,6 +149,10 @@ public class DSParser {
 			}
 		case .Function:
 			return parseFunctionDeclaration()
+		case .While:
+			fallthrough
+		case .If:
+			return parseConditionalStatement()
 		case .Newline:
 			consumeToken()
 			return nil
@@ -306,6 +310,31 @@ public class DSParser {
 			return parseOperationRHS(precedence: 0, lhs: primary)
 		} else {
 			return nil
+		}
+	}
+	
+	func parseConditionalStatement() -> DSConditionalStatement? {
+		let context = self.lineContext[0]
+		var token: DeafSharkToken = 0
+		switch tokens[0] {
+		case .If:
+			fallthrough
+		case .While:
+			token = tokens[0]
+			consumeToken()
+		default:
+			errors.append(DSError(message: "Missing expected 'while'.", lineContext: context))
+		}
+		
+		if let cond = parseExpression(), let body = parseBody(true) {
+			switch token {
+			case .While:
+				return DSWhileStatement(condition: cond, body: body, lineContext: context)
+			case .If:
+				return DSIfStatement(condition: cond, body: body, lineContext: context)
+			default:
+				return nil
+			}
 		}
 	}
 	

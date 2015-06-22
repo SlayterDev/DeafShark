@@ -16,6 +16,8 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 	case LeftBracket, LeftBrace, RightBracket, RightBrace
 	case Arrow, Semicolon, Comma
 	
+	case While, If, Return
+	
 	case IntegerLiteral(Int), FloatLiteral(Float), StringLiteral(String), BooleanLiteral(Bool)
 	
 	case VariableDeclaration, ConstantDeclaration
@@ -70,6 +72,12 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			return ","
 		case .BooleanLiteral(let bool):
 			return "\(bool)"
+		case .While:
+			return "while"
+		case .If:
+			return "if"
+		case .Return:
+			return "return"
 		}
 	}
 	
@@ -114,6 +122,24 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			// Match let decl
 			.match(/"^let(?!\(identifierRegex))") {
 				tokens.append(.ConstantDeclaration)
+				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
+				linepos += $0[0].characters.count
+			}?
+			// Match if statement
+			.match(/"^if(?!\(identifierRegex))") {
+				tokens.append(.If)
+				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
+				linepos += $0[0].characters.count
+			}?
+			// Match while
+			.match(/"^while(?!\(identifierRegex))") {
+				tokens.append(.While)
+				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
+				linepos += $0[0].characters.count
+			}?
+			// Match let decl
+			.match(/"^return(?!\(identifierRegex))") {
+				tokens.append(.Return)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
