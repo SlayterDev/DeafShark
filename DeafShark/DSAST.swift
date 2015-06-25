@@ -8,10 +8,11 @@
 
 import Cocoa
 
-public class DSAST {
+@objc public class DSAST: NSObject {
 	var children: [DSAST] = []
 	
 	init(lineContext: LineContext?) {
+		super.init()
 		self.lineContext = lineContext
 	}
 	
@@ -26,7 +27,7 @@ public class DSAST {
 		}
 	}
 	
-	public var description: String {
+	override public var description: String {
 		return ("DeafSharkAST" + self.childDescriptions)
 	}
 	
@@ -42,7 +43,11 @@ public class DSAST {
 }
 
 // Program Body
-public class DSBody: DSAST {}
+public class DSBody: DSAST {
+	func codeGen() {
+		CPPWrapper.DSBody_Codegen(self)
+	}
+}
 
 public class DSExpr: DSAST {
 	let isAssignable: Bool

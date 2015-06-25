@@ -315,7 +315,7 @@ public class DSParser {
 	
 	func parseConditionalStatement() -> DSConditionalStatement? {
 		let context = self.lineContext[0]
-		var token: DeafSharkToken = 0
+		var token: DeafSharkToken = .If
 		switch tokens[0] {
 		case .If:
 			fallthrough
@@ -336,6 +336,8 @@ public class DSParser {
 				return nil
 			}
 		}
+		
+		return nil
 	}
 	
 	func parsePrimary() -> DSExpr? {

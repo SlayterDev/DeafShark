@@ -8,6 +8,10 @@
 
 import Foundation
 
-if let ast = "func add(x as Int, y as Int) -> Int { let a = x + y }\nlet finished = NO".tokenize()?.parse() {
+if let ast = "let x = 5 + 5\nlet y = 9 * 9".tokenize()?.parse() {
 	print(ast.description)
+	
+	if let body = ast as? DSBody {
+		body.codeGen()
+	}
 }

@@ -14,6 +14,7 @@
 		021861FC1B2F64E000D0ED84 /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021861FB1B2F64E000D0ED84 /* Error.swift */; };
 		021861FE1B305F0700D0ED84 /* DSAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021861FD1B305F0700D0ED84 /* DSAST.swift */; };
 		021862001B30636600D0ED84 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021861FF1B30636600D0ED84 /* Parser.swift */; };
+		02B4A8D91B39A2CC006C3669 /* CPPWrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02B4A8D81B39A2CC006C3669 /* CPPWrapper.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -37,6 +38,9 @@
 		021861FB1B2F64E000D0ED84 /* Error.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Error.swift; sourceTree = "<group>"; };
 		021861FD1B305F0700D0ED84 /* DSAST.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DSAST.swift; sourceTree = "<group>"; };
 		021861FF1B30636600D0ED84 /* Parser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Parser.swift; sourceTree = "<group>"; };
+		02B4A8D41B384C23006C3669 /* DeafShark-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DeafShark-Bridging-Header.h"; sourceTree = "<group>"; };
+		02B4A8D71B39A2CC006C3669 /* CPPWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CPPWrapper.h; sourceTree = "<group>"; };
+		02B4A8D81B39A2CC006C3669 /* CPPWrapper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CPPWrapper.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,6 +80,9 @@
 				021861FB1B2F64E000D0ED84 /* Error.swift */,
 				021861FD1B305F0700D0ED84 /* DSAST.swift */,
 				021861FF1B30636600D0ED84 /* Parser.swift */,
+				02B4A8D41B384C23006C3669 /* DeafShark-Bridging-Header.h */,
+				02B4A8D71B39A2CC006C3669 /* CPPWrapper.h */,
+				02B4A8D81B39A2CC006C3669 /* CPPWrapper.mm */,
 			);
 			path = DeafShark;
 			sourceTree = "<group>";
@@ -139,6 +146,7 @@
 				021861EF1B2F544F00D0ED84 /* main.swift in Sources */,
 				021861FE1B305F0700D0ED84 /* DSAST.swift in Sources */,
 				021861FA1B2F5D7800D0ED84 /* Tokenizer.swift in Sources */,
+				02B4A8D91B39A2CC006C3669 /* CPPWrapper.mm in Sources */,
 				021861F61B2F57C500D0ED84 /* Extensions.swift in Sources */,
 				021861FC1B2F64E000D0ED84 /* Error.swift in Sources */,
 				021861F81B2F5D0400D0ED84 /* Tokens.swift in Sources */,
@@ -230,14 +238,71 @@
 		021861F31B2F544F00D0ED84 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEFINES_MODULE = YES;
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+					__STDC_CONSTANT_MACROS,
+					__STDC_FORMAT_MACROS,
+					__STDC_LIMIT_MACROS,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/lib,
+				);
+				OTHER_LDFLAGS = (
+					"-lncurses",
+					"-lLLVMCodeGen",
+					"-lLLVMScalarOpts",
+					"-lLLVMProfileData",
+					"-lLLVMObject",
+					"-lLLVMMCParser",
+					"-lLLVMBitReader",
+					"-lLLVMInstCombine",
+					"-lLLVMTransformUtils",
+					"-lLLVMipa",
+					"-lLLVMAnalysis",
+					"-lLLVMTarget",
+					"-lLLVMMC",
+					"-lLLVMCore",
+					"-lLLVMSupport",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "DeafShark/DeafShark-Bridging-Header.h";
+				USER_HEADER_SEARCH_PATHS = "/usr/local/include/**";
 			};
 			name = Debug;
 		};
 		021861F41B2F544F00D0ED84 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEFINES_MODULE = YES;
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/lib,
+				);
+				OTHER_LDFLAGS = (
+					"-lncurses",
+					"-lLLVMCodeGen",
+					"-lLLVMScalarOpts",
+					"-lLLVMProfileData",
+					"-lLLVMObject",
+					"-lLLVMMCParser",
+					"-lLLVMBitReader",
+					"-lLLVMInstCombine",
+					"-lLLVMTransformUtils",
+					"-lLLVMipa",
+					"-lLLVMAnalysis",
+					"-lLLVMTarget",
+					"-lLLVMMC",
+					"-lLLVMCore",
+					"-lLLVMSupport",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "DeafShark/DeafShark-Bridging-Header.h";
+				USER_HEADER_SEARCH_PATHS = "/usr/local/include/**";
 			};
 			name = Release;
 		};
@@ -260,6 +325,7 @@
 				021861F41B2F544F00D0ED84 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
