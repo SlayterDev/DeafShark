@@ -13,6 +13,8 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/DerivedTypes.h"
+#include "llvm/Bitcode/ReaderWriter.h"
+#include "llvm/Support/raw_ostream.h"
 
 @implementation CPPWrapper
 
@@ -80,6 +82,25 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 	return [self ErrorV:"invalid binary operator"];
 }
 
++(void) Call_Codegen:(DSCall *)expr {
+	if ([expr.identifier.name isEqual:@"print"]) {
+		DSStringLiteral *strArgType = (DSStringLiteral *)expr.children[0];
+		NSString *strArg = strArgType.val;
+		
+		Value *string = Builder.CreateGlobalStringPtr([strArg cStringUsingEncoding:NSASCIIStringEncoding]);
+		
+		std::vector<Type *> putsArgs;
+		putsArgs.push_back(Builder.getInt8Ty()->getPointerTo());
+		ArrayRef<Type *> argsRef(putsArgs);
+		
+		FunctionType *putsType = FunctionType::get(Builder.getInt32Ty(), argsRef, false);
+		Constant *putsFunc = theModule->getOrInsertFunction("puts", putsType);
+		Builder.CreateCall(putsFunc, string);
+	} else {
+		NSLog(@"Function call not supported");
+	}
+}
+
 +(void) DSBody_Codegen:(DSBody *)body {
 	LLVMContext &Context = getGlobalContext();
 	
@@ -101,6 +122,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 			[self BinaryExp_Codegen:temp.rhs andRHS:temp.lhs andExpr:temp];
 		} else if ([child isKindOfClass:DSDeclaration.class]) {
 			[self Declaration_Codegen:(DSDeclaration *)child function:f];
+		} else if ([child isKindOfClass:DSCall.class]) {
+			[self Call_Codegen:(DSCall *)child];
 		}
 	}
 	
@@ -109,6 +132,12 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 	
 	
 	theModule->dump();
+	
+	std::error_code ec;
+	
+	raw_fd_ostream output("/Users/Slayter/hello.bc", ec, (sys::fs::OpenFlags)0);
+	
+	WriteBitcodeToFile(theModule, output);
 }
 
 @end

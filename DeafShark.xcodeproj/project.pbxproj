@@ -266,6 +266,7 @@
 					"-lLLVMTarget",
 					"-lLLVMMC",
 					"-lLLVMCore",
+					"-lLLVMBitWriter",
 					"-lLLVMSupport",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -298,6 +299,7 @@
 					"-lLLVMTarget",
 					"-lLLVMMC",
 					"-lLLVMCore",
+					"-lLLVMBitWriter",
 					"-lLLVMSupport",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
