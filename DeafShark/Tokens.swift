@@ -189,6 +189,16 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 				}
 				linepos += $0[0].characters.count
 			}?
+			// match string literals
+			.match(/"^\"(.+)\"") {
+				var string = $0[0] as NSString
+				string = string.substringWithRange(NSMakeRange(1, $0[0].characters.count-2))
+				
+				tokens.append(.StringLiteral(string as String))
+				
+				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
+				linepos += $0[0].characters.count // Plus two for the quotes
+			}?
 				
 			// Operators and puctuation
 			
@@ -278,6 +288,10 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 		if errors.isEmpty {
 			return (rep, nil)
 		} else {
+			for error in errors {
+				print(error.description)
+			}
+			
 			return (rep, errors)
 		}
 	}

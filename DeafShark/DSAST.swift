@@ -228,7 +228,7 @@ public class DSCall: DSExpr {
 	}
 	
 	override public var description: String {
-		return "DeafSharkFunctionCall - identifier:\(identifier.name)"
+		return "DeafSharkFunctionCall - identifier:\(identifier.name)" + self.childDescriptions
 	}
 }
 
@@ -258,6 +258,18 @@ public class DSIdentifierString: DSExpr {
 	
 	override public var description: String {
 		return "DeafSharkIdentifier - name:\(name)"
+	}
+}
+
+public class DSStringLiteral: DSExpr {
+	let val: String
+	init (val: String, lineContext: LineContext?) {
+		self.val = val
+		super.init(lineContext: lineContext)
+	}
+	
+	override public var description: String {
+		return "DeafSharkStringLiteral - val:\"\(val)\""
 	}
 }
 

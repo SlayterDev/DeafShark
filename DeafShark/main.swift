@@ -8,10 +8,12 @@
 
 import Foundation
 
-if let ast = "let x = 5 + 5\nlet y = 9 * 9".tokenize()?.parse() {
+if let ast = "let x = \"Hello, World!\"\nprint(x)".tokenize()?.parse() {
 	print(ast.description)
 	
-	if let body = ast as? DSBody {
+	/*if let body = ast as? DSBody {
 		body.codeGen()
-	}
+	}*/
+} else {
+	print("Something went wrong")
 }

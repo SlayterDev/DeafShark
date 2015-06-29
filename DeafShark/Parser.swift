@@ -352,6 +352,9 @@ public class DSParser {
 		case .BooleanLiteral(let bool):
 			consumeToken()
 			return DSBooleanLiteral(val: bool, lineContext: context)
+		case .StringLiteral(let string):
+			consumeToken()
+			return DSStringLiteral(val: string, lineContext: context)
 		default:
 			errors.append(DSError(message: "\(tokens[0]) is not a DeafShark expression.", lineContext: context))
 			return nil
