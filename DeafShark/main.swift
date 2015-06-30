@@ -26,7 +26,9 @@ if inputFile == "" {
 
 let fileContent: String
 do {
-	fileContent = try NSString(contentsOfFile: inputFile, encoding: NSUTF8StringEncoding) as String
+	var nsFileContent = try NSString(contentsOfFile: inputFile, encoding: NSUTF8StringEncoding)
+	nsFileContent = nsFileContent.restoreEscapeCharacters()
+	fileContent = nsFileContent as String
 } catch {
 	print("Could not open file")
 	exit(1)

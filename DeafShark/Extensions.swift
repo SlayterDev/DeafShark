@@ -98,3 +98,15 @@ extension DeafSharkLexicalRepresentation {
 		}
 	}
 }
+
+extension NSString {
+	func restoreEscapeCharacters() -> NSString {
+		var temp = self
+		temp = temp.stringByReplacingOccurrencesOfString("\\n", withString: "\n")
+		temp = temp.stringByReplacingOccurrencesOfString("\\\"", withString: "\"")
+		temp = temp.stringByReplacingOccurrencesOfString("\\\'", withString: "\'")
+		temp = temp.stringByReplacingOccurrencesOfString("\\r", withString: "\r")
+		temp = temp.stringByReplacingOccurrencesOfString("\\t", withString: "\t")
+		return temp
+	}
+}
