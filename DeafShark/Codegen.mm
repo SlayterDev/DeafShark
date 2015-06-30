@@ -24,6 +24,7 @@ using namespace llvm;
 static Module *theModule;
 static IRBuilder<> Builder(getGlobalContext());
 static std::map<NSString *, Value *> namedValues;
+static std::map<NSString *, NSString *>namedTypes;
 
 static BOOL printMade = false;
 Constant *putsFunc;
@@ -43,8 +44,7 @@ Constant *putsFunc;
 }
 
 +(NSString *) typeForIdentifier:(DSIdentifierString *)expr {
-	// TODO: Type checking
-	return NULL;
+	return namedTypes[expr.name];
 }
 
 static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varName) {
@@ -63,6 +63,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 	
 	//[namedValues setObject:[NSValue valueWithBytes:&v objCType:@encode(Value)] forKey:expr.identifier];
 	namedValues[expr.identifier] = v;
+	namedTypes[expr.identifier] = expr.type.identifier;
 	
 	AllocaInst *alloca = CreateEntryBlockAlloca(func, expr.identifier);
 	
@@ -143,6 +144,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 	theModule = new Module("myModule", Context);
 	
 	namedValues.clear();
+	namedTypes.clear();
 	
 	// Create function
 	FunctionType *ft = FunctionType::get(Builder.getInt32Ty(), false);

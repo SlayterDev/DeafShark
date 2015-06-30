@@ -48,6 +48,8 @@ import Cocoa
 			}
 		}
 		
+		format += "\n"
+		
 		return format as NSString
 	}
 	

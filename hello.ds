@@ -1,2 +1,2 @@
 let x = 5 + 5 * 7 - 9
-print("Hello, World!" + x + "\n")
+print(x)
