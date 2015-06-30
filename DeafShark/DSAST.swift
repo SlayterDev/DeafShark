@@ -45,7 +45,7 @@ import Cocoa
 // Program Body
 public class DSBody: DSAST {
 	func codeGen() {
-		CPPWrapper.DSBody_Codegen(self)
+		Codegen.DSBody_Codegen(self)
 	}
 }
 

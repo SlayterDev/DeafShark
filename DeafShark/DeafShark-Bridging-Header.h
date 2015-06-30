@@ -9,6 +9,6 @@
 #ifndef DeafShark_Bridging_Header_h
 #define DeafShark_Bridging_Header_h
 
-#import "CPPWrapper.h"
+#import "Codegen.h"
 
 #endif /* DeafShark_Bridging_Header_h */
