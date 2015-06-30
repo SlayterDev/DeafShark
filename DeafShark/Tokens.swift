@@ -194,8 +194,6 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 				var string = $0[0] as NSString
 				string = string.substringWithRange(NSMakeRange(1, $0[0].characters.count-2))
 				
-				print("Captured: \(string)")
-				
 				tokens.append(.StringLiteral(string as String))
 				
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
