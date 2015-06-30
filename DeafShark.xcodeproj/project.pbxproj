@@ -79,20 +79,52 @@
 			isa = PBXGroup;
 			children = (
 				021861EE1B2F544F00D0ED84 /* main.swift */,
-				021861F51B2F57C500D0ED84 /* Extensions.swift */,
-				021861F71B2F5D0400D0ED84 /* Tokens.swift */,
-				021861F91B2F5D7800D0ED84 /* Tokenizer.swift */,
-				021861FB1B2F64E000D0ED84 /* Error.swift */,
-				021861FD1B305F0700D0ED84 /* DSAST.swift */,
-				021861FF1B30636600D0ED84 /* Parser.swift */,
+				02EC96C01B42EBDA00D3D7E1 /* Misc */,
+				02EC96BE1B42EBC600D3D7E1 /* Tokenizer */,
+				02EC96BF1B42EBD000D3D7E1 /* Parser */,
+				02EC96BD1B42EBBB00D3D7E1 /* Compiler */,
+			);
+			path = DeafShark;
+			sourceTree = "<group>";
+		};
+		02EC96BD1B42EBBB00D3D7E1 /* Compiler */ = {
+			isa = PBXGroup;
+			children = (
 				02EC96B61B42DC9A00D3D7E1 /* CompilerHelper.swift */,
-				02B4A8D41B384C23006C3669 /* DeafShark-Bridging-Header.h */,
 				02B4A8D71B39A2CC006C3669 /* Codegen.h */,
 				02EC96BB1B42E7F800D3D7E1 /* Codegen.mm */,
 				02EC96B81B42E5EE00D3D7E1 /* LLVMHelper.h */,
 				02EC96B91B42E5EE00D3D7E1 /* LLVMHelper.mm */,
 			);
-			path = DeafShark;
+			name = Compiler;
+			sourceTree = "<group>";
+		};
+		02EC96BE1B42EBC600D3D7E1 /* Tokenizer */ = {
+			isa = PBXGroup;
+			children = (
+				021861F71B2F5D0400D0ED84 /* Tokens.swift */,
+				021861F91B2F5D7800D0ED84 /* Tokenizer.swift */,
+			);
+			name = Tokenizer;
+			sourceTree = "<group>";
+		};
+		02EC96BF1B42EBD000D3D7E1 /* Parser */ = {
+			isa = PBXGroup;
+			children = (
+				021861FD1B305F0700D0ED84 /* DSAST.swift */,
+				021861FF1B30636600D0ED84 /* Parser.swift */,
+			);
+			name = Parser;
+			sourceTree = "<group>";
+		};
+		02EC96C01B42EBDA00D3D7E1 /* Misc */ = {
+			isa = PBXGroup;
+			children = (
+				021861F51B2F57C500D0ED84 /* Extensions.swift */,
+				021861FB1B2F64E000D0ED84 /* Error.swift */,
+				02B4A8D41B384C23006C3669 /* DeafShark-Bridging-Header.h */,
+			);
+			name = Misc;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

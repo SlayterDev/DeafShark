@@ -23,7 +23,7 @@ using namespace llvm;
 
 static Module *theModule;
 static IRBuilder<> Builder(getGlobalContext());
-static NSMutableDictionary *namedValues;
+static std::map<NSString *, Value *> namedValues;
 
 static BOOL printMade = false;
 Constant *putsFunc;
@@ -34,12 +34,17 @@ Constant *putsFunc;
 }
 
 +(Value *) VariableExpr_Codegen:(DSIdentifierString *)expr {
-	Value *V = (__bridge Value *)namedValues[expr.name];
+	Value *V = namedValues[expr.name];
 	return V ? V : [Codegen ErrorV:"unknown variable name"];
 }
 
 +(Value *) IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr {
 	return ConstantInt::get(getGlobalContext(), APInt(32, (int)expr.val));
+}
+
++(NSString *) typeForIdentifier:(DSIdentifierString *)expr {
+	// TODO: Type checking
+	return NULL;
 }
 
 static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varName) {
@@ -57,6 +62,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 	}
 	
 	//[namedValues setObject:[NSValue valueWithBytes:&v objCType:@encode(Value)] forKey:expr.identifier];
+	namedValues[expr.identifier] = v;
 	
 	AllocaInst *alloca = CreateEntryBlockAlloca(func, expr.identifier);
 	
@@ -68,9 +74,17 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 	
 	if ([LHS isKindOfClass:DSSignedIntegerLiteral.class]) {
 		L = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)LHS];
+	} else if ([LHS isKindOfClass:DSBinaryExpression.class]) {
+		DSBinaryExpression *temp = (DSBinaryExpression *)LHS;
+		L = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
 	}
+	
+	
 	if ([RHS isKindOfClass:DSSignedIntegerLiteral.class]) {
-		R = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)LHS];
+		R = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)RHS];
+	} else if ([RHS isKindOfClass:DSBinaryExpression.class]) {
+		DSBinaryExpression *temp = (DSBinaryExpression *)RHS;
+		R = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
 	}
 	
 	if ([expr.op isEqual: @"+"]) {
@@ -107,6 +121,12 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 		printArguments.push_back(string);
 		
 		for (DSAST *arg in args) {
+			if ([arg isKindOfClass:DSIdentifierString.class]) {
+				Value *v = [self VariableExpr_Codegen:(DSIdentifierString *)arg];
+				printArguments.push_back(v);
+				continue;
+			}
+			
 			printArguments.push_back([LLVMHelper valueForArgument:arg]);
 		}
 		
@@ -122,7 +142,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 	
 	theModule = new Module("myModule", Context);
 	
-	namedValues = [NSMutableDictionary dictionary];
+	namedValues.clear();
 	
 	// Create function
 	FunctionType *ft = FunctionType::get(Builder.getInt32Ty(), false);

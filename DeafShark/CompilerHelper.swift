@@ -40,6 +40,9 @@ import Cocoa
 				(binExpForm, binExpArgs) = binaryExprFormat(expr)
 				format += binExpForm
 				printCallArgs += binExpArgs
+			case let expr as DSIdentifierString:
+				format += "%d"
+				printCallArgs.append(expr)
 			default:
 				break
 			}
@@ -64,6 +67,9 @@ import Cocoa
 			(binExpFormat, binExpArgs) = binaryExprFormat(binExpr)
 			lhsFormat += binExpFormat
 			args += binExpArgs
+		case let expr as DSIdentifierString:
+			lhsFormat += "%d"
+			args.append(expr)
 		default:
 			lhsFormat += ""
 		}
@@ -81,6 +87,9 @@ import Cocoa
 			(binExpFormat, binExpArgs) = binaryExprFormat(binExpr)
 			rhsFormat += binExpFormat
 			args += binExpArgs
+		case let expr as DSIdentifierString:
+			rhsFormat += "%d"
+			args.append(expr)
 		default:
 			rhsFormat += ""
 		}
