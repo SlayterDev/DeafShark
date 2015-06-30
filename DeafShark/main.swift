@@ -8,9 +8,35 @@
 
 import Foundation
 
-if let ast = "print(\"Hello, World!\")".tokenize()?.parse() {
+
+var inputFile = ""
+
+for arg in Process.arguments {
+	let nsarg = arg as NSString
+	if nsarg.hasSuffix(".ds") {
+		inputFile = arg
+		break
+	}
+}
+
+if inputFile == "" {
+	print("Missing input file")
+	exit(1)
+}
+
+let fileContent: String
+do {
+	var nsFileContent = try NSString(contentsOfFile: inputFile, encoding: NSUTF8StringEncoding)
+	nsFileContent = nsFileContent.restoreEscapeCharacters()
+	fileContent = nsFileContent as String
+} catch {
+	print("Could not open file")
+	exit(1)
+}
+
+if let ast = fileContent.tokenize()?.parse() {
 	print(ast.description)
-	
+
 	if let body = ast as? DSBody {
 		body.codeGen()
 	}
