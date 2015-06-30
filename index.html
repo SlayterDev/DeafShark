@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>DeafShark by SlayterDev</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>DeafShark</h1>
+        <p>The DeafShark Programming Language implemented in Swift and LLVM</p>
+
+        <p class="view"><a href="https://github.com/SlayterDev/DeafShark">View the Project on GitHub <small>SlayterDev/DeafShark</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/SlayterDev/DeafShark/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/SlayterDev/DeafShark/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/SlayterDev/DeafShark">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="deafshark" class="anchor" href="#deafshark" aria-hidden="true"><span class="octicon octicon-link"></span></a>DeafShark</h1>
+
+<p>The DeafShark Programming Language implemented in Swift and LLVM</p>
+
+<h3>
+<a id="how-do-i-try-it" class="anchor" href="#how-do-i-try-it" aria-hidden="true"><span class="octicon octicon-link"></span></a>How Do I Try It?</h3>
+
+<p>You can't do much yet...but if you really want to, <a href="https://github.com/SlayterDev/DeafShark#try-it-out">jump to the bottom</a>.</p>
+
+<h3>
+<a id="why" class="anchor" href="#why" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why?</h3>
+
+<p>Why not? Next question.</p>
+
+<h3>
+<a id="discussion" class="anchor" href="#discussion" aria-hidden="true"><span class="octicon octicon-link"></span></a>Discussion</h3>
+
+<p><strong>Current Language Status:</strong> Mostly Aimless</p>
+
+<p>I've started writing this language because I've always enjoyed low level programming and making things to make other things.
+There isn't exactly a problem this language is meant to solve. It's a programming language that can hopefully be used as a general
+purpose programming language. I'm taking inspiration from the Swift syntax, though I want it to be different as well (hard as that
+may be). I plan for this language to be suitable for things like systems programming to quick scripting. This is a learning
+experience the whole way but let's hope something semi useful comes out of it.</p>
+
+<p><strong>Implementation</strong></p>
+
+<pre><code>[  Source File  ] -&gt; [  Lexer  ] -&gt; [  Parser  ] -&gt; [  Compiler  ] -&gt; [  Binary  ]
+</code></pre>
+
+<p>Code will be written in source files which is chopped into a large array of tokens by the lexer. The parser then analyzes the tokens
+for syntax errors and creates an Abstract Syntax Tree. The compiler will then use this to translate the higher level code into 
+LLVM IR "assembly" which will then be compiled into an executable binary.</p>
+
+<p><strong>Sample Syntax</strong></p>
+
+<pre><code>let x = 5 + 5
+var y as Int
+
+func add(x as Int, y as Int) -&gt; Int {
+  return x + y
+}
+</code></pre>
+
+<h3>
+<a id="aknowledgments" class="anchor" href="#aknowledgments" aria-hidden="true"><span class="octicon octicon-link"></span></a>Aknowledgments</h3>
+
+<p>Thank you to the <a href="https://github.com/mitchellallison/nifty">Nifty</a> project by Mitchell Allison for giving me a jumpstart on
+the lexer and parser for <code>DeafShark</code> since much of the syntax is similar to Swift.</p>
+
+<h3>
+<a id="try-it-out" class="anchor" href="#try-it-out" aria-hidden="true"><span class="octicon octicon-link"></span></a>Try it out</h3>
+
+<ul>
+<li>Make sure you have <a href="llvm.org">LLVM</a> installed because you'll need it. I won't go into how to install this because it seems different for everyone, however building it from source seems like a good way to go.</li>
+<li>Next clone the repository and open up the Xcode project. </li>
+<li>Create a file called <code>hello.ds</code> (or whatever you want so long as it ends with <code>.ds</code>). In that file put <code>print("Hello, World\n")</code>.</li>
+<li>You'll need to add the location of your source file as a commandline argument to the Scheme (upper left where it says <code>DeafShark</code>). </li>
+<li>Optionally you can add the <code>-o</code> argument and another argument that is the location to store the output file (use the full path, otherwise it dumps the file with the debug executable).</li>
+<li>When you run the compiler, it will dump out the AST of the source as well as the LLVM IR code. This is mainly for debug purposes and will likely be removed in the future</li>
+<li>When the program finishes, you should have a file called <code>myFile.bc</code> or whatever you called it. This is LLVM bitcode which can then be run via <code>lli myFile.bc</code> in the Terminal</li>
+</ul>
+
+<p>Congratulations! You just wrote and ran your first <code>DeafShark</code> program! Probably pretty underwhelming at this point in the development. In the future, the bitcode will be compiled into an executable that can be run directly without the need of <code>lli</code>. I also plan to have executable versions of the <code>DeafShark</code> compiler that can be run from the command line.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/SlayterDev">SlayterDev</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
