@@ -199,9 +199,20 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count // Plus two for the quotes
 			}?
+			
+			// match a comment
+			.match(/"^//(.*)\\n") {
+				linepos += $0[0].characters.count
+			}?
+			// match a block comment
+			.match(/"^/\\*(.*)\\*/") {
+				linepos += $0[0].characters.count
+			}?
+				
 				
 			// Operators and puctuation
-			
+				
+				
 			// return type arrow
 			.match(/"^->") {
 				tokens.append(.Arrow)

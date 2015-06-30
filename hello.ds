@@ -1,2 +1,4 @@
 let x = 5 + 5 * 7 - 9
-print(x)
+print(x) // This is a comment
+
+/* This is a block comment */
