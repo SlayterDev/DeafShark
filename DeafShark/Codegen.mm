@@ -8,6 +8,7 @@
 
 #import "Codegen.h"
 #import "DeafShark-Swift.h"
+#import "LLVMHelper.h"
 
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Module.h"
@@ -23,6 +24,9 @@ using namespace llvm;
 static Module *theModule;
 static IRBuilder<> Builder(getGlobalContext());
 static NSMutableDictionary *namedValues;
+
+static BOOL printMade = false;
+Constant *putsFunc;
 
 +(Value *) ErrorV:(const char *)str {
 	NSLog(@"%s", str);
@@ -84,18 +88,29 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 
 +(void) Call_Codegen:(DSCall *)expr {
 	if ([expr.identifier.name isEqual:@"print"]) {
-		DSStringLiteral *strArgType = (DSStringLiteral *)expr.children[0];
-		NSString *strArg = strArgType.val;
+		if (!printMade) {
+			std::vector<Type *> putsArgs;
+			putsArgs.push_back(Builder.getInt8Ty()->getPointerTo());
+			ArrayRef<Type *> argsRef(putsArgs);
+			
+			FunctionType *putsType = FunctionType::get(Builder.getInt32Ty(), argsRef, true);
+			putsFunc = theModule->getOrInsertFunction("printf", putsType);
+		}
 		
-		Value *string = Builder.CreateGlobalStringPtr([strArg cStringUsingEncoding:NSASCIIStringEncoding]);
+		// MAKE THE CALL
+		NSString *format = [[CompilerHelper sharedInstance] getPrintFormatString:expr];
+		NSArray *args = [[CompilerHelper sharedInstance] getMostRecentPrintArgs];
 		
-		std::vector<Type *> putsArgs;
-		putsArgs.push_back(Builder.getInt8Ty()->getPointerTo());
-		ArrayRef<Type *> argsRef(putsArgs);
+		Value *string = Builder.CreateGlobalStringPtr([format cStringUsingEncoding:NSASCIIStringEncoding]);
 		
-		FunctionType *putsType = FunctionType::get(Builder.getInt32Ty(), argsRef, false);
-		Constant *putsFunc = theModule->getOrInsertFunction("puts", putsType);
-		Builder.CreateCall(putsFunc, string);
+		std::vector<Value *> printArguments;
+		printArguments.push_back(string);
+		
+		for (DSAST *arg in args) {
+			printArguments.push_back([LLVMHelper valueForArgument:arg]);
+		}
+		
+		Builder.CreateCall(putsFunc, printArguments);
 	} else {
 		NSLog(@"Function call not supported");
 		exit(1);
@@ -144,11 +159,9 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 	
 	NSString *outputPath;
 	if ([args containsObject:@"-o"]) {
-		NSLog(@"Found output arg");
 		int index = (int)([args indexOfObject:@"-o"] + 1);
 		if (index < args.count) {
 			outputPath = args[index];
-			NSLog(@"Output: %@", outputPath);
 		} else {
 			NSLog(@"Missing output argument");
 			exit(1);

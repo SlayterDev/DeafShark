@@ -190,7 +190,7 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 				linepos += $0[0].characters.count
 			}?
 			// match string literals
-			.match(/"^\"(.+)\"") {
+			.match(/"^\"(\\.|[^\"])*\"") {
 				var string = $0[0] as NSString
 				string = string.substringWithRange(NSMakeRange(1, $0[0].characters.count-2))
 				
