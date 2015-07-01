@@ -2,7 +2,10 @@ func add(x as Int, y as Int) -> Int {
 	return x + y
 }
 
-var x = add(100, 10)
+var a = 100
+var b = 2
+
+var x = add(a, b)
 print("Result: " + x)
 
 

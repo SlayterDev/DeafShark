@@ -65,6 +65,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 		v = [self VariableExpr_Codegen:(DSIdentifierString *)expr.assignment];
 	} else if ([expr.assignment isKindOfClass:DSCall.class]) {
 		v = [self Call_Codegen:(DSCall *)expr.assignment];
+	} else if ([expr.assignment isKindOfClass:DSSignedIntegerLiteral.class]) {
+		v = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr.assignment];
 	} else {
 		[self ErrorV:"Unsupported declaration"];
 		exit(1);
@@ -165,7 +167,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 				continue;
 			}
 			
-			printArguments.push_back([LLVMHelper valueForArgument:arg]);
+			printArguments.push_back([LLVMHelper valueForArgument:arg symbolTable:namedValues andBuilder:Builder]);
 		}
 		
 		 return Builder.CreateCall(putsFunc, printArguments);
@@ -183,7 +185,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 		
 		std::vector<Value *> ArgsV;
 		for (unsigned i = 0, e = (unsigned)expr.children.count; i != e; i++) {
-			ArgsV.push_back([LLVMHelper valueForArgument:expr.children[i]]);
+			ArgsV.push_back([LLVMHelper valueForArgument:expr.children[i] symbolTable:namedValues andBuilder:Builder]);
 			if (ArgsV.back() == 0) {
 				[self ErrorV:"Argument came back nil"];
 				exit(1);
