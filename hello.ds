@@ -1,4 +1,6 @@
 let x = 5 + 5 * 7 - 9
-print(x) // This is a comment
+print("X: " + x)
+let y = x + 6
+print("Y: " + y) // This is a comment
 
 /* This is a block comment */

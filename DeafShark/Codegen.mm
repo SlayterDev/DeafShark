@@ -78,6 +78,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 	} else if ([LHS isKindOfClass:DSBinaryExpression.class]) {
 		DSBinaryExpression *temp = (DSBinaryExpression *)LHS;
 		L = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
+	} else if ([LHS isKindOfClass:DSIdentifierString.class]) {
+		L = [self VariableExpr_Codegen:(DSIdentifierString *)LHS];
 	}
 	
 	
@@ -86,6 +88,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 	} else if ([RHS isKindOfClass:DSBinaryExpression.class]) {
 		DSBinaryExpression *temp = (DSBinaryExpression *)RHS;
 		R = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
+	} else if ([RHS isKindOfClass:DSIdentifierString.class]) {
+		R = [self VariableExpr_Codegen:(DSIdentifierString *)RHS];
 	}
 	
 	if ([expr.op isEqual: @"+"]) {
