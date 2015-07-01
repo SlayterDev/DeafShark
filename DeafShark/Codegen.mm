@@ -279,6 +279,9 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 		}
 	}
 	
+	if (returnVal == 0)
+		returnVal = ConstantInt::get(getGlobalContext(), APInt(32, 0));
+	
 	return returnVal;
 }
 
