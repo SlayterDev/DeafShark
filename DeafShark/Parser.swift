@@ -153,6 +153,8 @@ public class DSParser {
 			fallthrough
 		case .If:
 			return parseConditionalStatement()
+		case .Return:
+			return parseReturnStatement()
 		case .Newline:
 			consumeToken()
 			return nil
@@ -308,6 +310,16 @@ public class DSParser {
 	func parseExpression() -> DSExpr? {
 		if let primary = parsePrimary() {
 			return parseOperationRHS(precedence: 0, lhs: primary)
+		} else {
+			return nil
+		}
+	}
+	
+	func parseReturnStatement() -> DSReturnStatement? {
+		consumeToken()
+		
+		if let rhs = parseExpression() {
+			return DSReturnStatement(statement: rhs, lineContext: self.lineContext[0])
 		} else {
 			return nil
 		}

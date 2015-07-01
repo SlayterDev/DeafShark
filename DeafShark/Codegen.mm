@@ -63,6 +63,11 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 		v = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
 	} else if ([expr.assignment isKindOfClass:DSIdentifierString.class]) {
 		v = [self VariableExpr_Codegen:(DSIdentifierString *)expr.assignment];
+	} else if ([expr.assignment isKindOfClass:DSCall.class]) {
+		v = [self Call_Codegen:(DSCall *)expr.assignment];
+	} else {
+		[self ErrorV:"Unsupported declaration"];
+		exit(1);
 	}
 	
 	AllocaInst *alloca = CreateEntryBlockAlloca(func, expr.identifier);
@@ -126,12 +131,14 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 		v = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
 	} else if ([expr.expression isKindOfClass:DSIdentifierString.class]) {
 		v = [self VariableExpr_Codegen:(DSIdentifierString *)expr.expression];
+	} else if ([expr.expression isKindOfClass:DSCall.class]) {
+		v = [self Call_Codegen:(DSCall *)expr.expression];
 	}
 	
 	Builder.CreateStore(v, var);
 }
 
-+(void) Call_Codegen:(DSCall *)expr {
++(Value *) Call_Codegen:(DSCall *)expr {
 	if ([expr.identifier.name isEqual:@"print"]) {
 		if (!printMade) {
 			std::vector<Type *> putsArgs;
@@ -161,11 +168,116 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 			printArguments.push_back([LLVMHelper valueForArgument:arg]);
 		}
 		
-		Builder.CreateCall(putsFunc, printArguments);
+		 return Builder.CreateCall(putsFunc, printArguments);
 	} else {
-		NSLog(@"Function call not supported");
-		exit(1);
+		Function *calleef = theModule->getFunction([expr.identifier.name cStringUsingEncoding:NSUTF8StringEncoding]);
+		
+		if (calleef == 0) {
+			[self ErrorV:"Unknown function"];
+			exit(1);
+		}
+		
+		if (calleef->arg_size() != expr.children.count) {
+			[self ErrorV:"Invalid num of arguments"];
+		}
+		
+		std::vector<Value *> ArgsV;
+		for (unsigned i = 0, e = (unsigned)expr.children.count; i != e; i++) {
+			ArgsV.push_back([LLVMHelper valueForArgument:expr.children[i]]);
+			if (ArgsV.back() == 0) {
+				[self ErrorV:"Argument came back nil"];
+				exit(1);
+			}
+		}
+		
+		return Builder.CreateCall(calleef, ArgsV, "calltmp");
 	}
+}
+
++(Function *) Prototype_Codegen:(DSFunctionPrototype *)expr {
+	std::vector<Type *> Ints(expr.parameters.count, Type::getInt32Ty(getGlobalContext()));
+	
+	FunctionType *FT = FunctionType::get(Type::getInt32Ty(getGlobalContext()), Ints, false);
+	
+	Function *F = Function::Create(FT, Function::ExternalLinkage, [expr.identifier cStringUsingEncoding:NSUTF8StringEncoding], theModule);
+	
+	if (F->getName() != [expr.identifier cStringUsingEncoding:NSUTF8StringEncoding]) {
+		F->eraseFromParent();
+		F = theModule->getFunction([expr.identifier cStringUsingEncoding:NSUTF8StringEncoding]);
+		
+		if (!F->empty()) {
+			[self ErrorV:"Redefinition of function"];
+			exit(1);
+		}
+	}
+	
+	
+	unsigned Idx = 0;
+	for (Function::arg_iterator AI = F->arg_begin(); Idx != expr.parameters.count; AI++, Idx++) {
+		AI->setName([expr.parameters[Idx].identifier cStringUsingEncoding:NSUTF8StringEncoding]);
+	}
+	
+	return F;
+}
+
++(void) CreateArgumentAlloca:(Function *)F withPrototype:(DSFunctionPrototype *)expr {
+	Function::arg_iterator AI = F->arg_begin();
+	for (unsigned Idx = 0, e = (unsigned)expr.parameters.count; Idx != e; Idx++, AI++) {
+		AllocaInst *alloca = CreateEntryBlockAlloca(F, expr.parameters[Idx].identifier);
+		
+		Builder.CreateStore(AI, alloca);
+		
+		namedValues[expr.parameters[Idx].identifier] = alloca;
+	}
+}
+
++(Function *) Function_Codegen:(DSFunctionDeclaration *)expr {
+	namedValues.clear();
+	
+	Function *theFunction = [self Prototype_Codegen:expr.prototype];
+	if (theFunction == 0)
+		return 0;
+	
+	BasicBlock *BB = BasicBlock::Create(getGlobalContext(), "entry", theFunction);
+	Builder.SetInsertPoint(BB);
+	
+	[self CreateArgumentAlloca:theFunction withPrototype:expr.prototype];
+	
+	if (Value *RetValue = [self Body_Codegen:expr.body andFunction:theFunction]) {
+		Builder.CreateRet(RetValue);
+		
+		// TODO: Verify function
+		
+		return theFunction;
+	}
+	
+	theFunction->eraseFromParent();
+	return 0;
+}
+
++(Value *) Body_Codegen:(DSBody *)body andFunction:(Function *)f {
+	Value *returnVal = 0;
+	
+	for (DSAST *child in body.children) {
+		if ([child isKindOfClass:DSReturnStatement.class]) {
+			DSReturnStatement *temp = (DSReturnStatement *)child;
+			
+			if ([temp.statement isKindOfClass:DSBinaryExpression.class]) {
+				DSBinaryExpression *binTemp = (DSBinaryExpression *)temp.statement;
+				returnVal = [self BinaryExp_Codegen:binTemp.rhs andRHS:binTemp.lhs andExpr:binTemp];
+			} else if ([temp.statement isKindOfClass:DSIdentifierString.class]) {
+				returnVal = [self VariableExpr_Codegen:(DSIdentifierString *)temp.statement];
+			}
+		} else if ([child isKindOfClass:DSDeclaration.class]) {
+			[self Declaration_Codegen:(DSDeclaration *)child function:f];
+		} else if ([child isKindOfClass:DSCall.class]) {
+			[self Call_Codegen:(DSCall *)child];
+		} else if ([child isKindOfClass:DSAssignment.class]) {
+			[self Assignment_Codegen:(DSAssignment *)child];
+		}
+	}
+	
+	return returnVal;
 }
 
 +(void) DSBody_Codegen:(DSBody *)body {
@@ -175,6 +287,12 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 	
 	namedValues.clear();
 	namedTypes.clear();
+	
+	for (DSAST *child in body.children) {
+		if ([child isKindOfClass:DSFunctionDeclaration.class]) {
+			[self Function_Codegen:(DSFunctionDeclaration *)child];
+		}
+	}
 	
 	// Create function
 	FunctionType *ft = FunctionType::get(Builder.getInt32Ty(), false);

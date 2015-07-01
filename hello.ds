@@ -1,7 +1,9 @@
-var x = 5 + 5 * 7 - 9
-print("X: " + x) // 31
-let y = x + 6
-x = y
-print("Y: " + y + " X: " + x) // 37, 37
+func add(x as Int, y as Int) -> Int {
+	return x + y
+}
+
+var x = add(100, 10)
+print("Result: " + x)
+
 
 /* This is a block comment */
