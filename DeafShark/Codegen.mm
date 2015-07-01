@@ -23,7 +23,7 @@ using namespace llvm;
 
 static Module *theModule;
 static IRBuilder<> Builder(getGlobalContext());
-static std::map<NSString *, Value *> namedValues;
+static std::map<NSString *, AllocaInst *> namedValues;
 static std::map<NSString *, NSString *>namedTypes;
 
 static BOOL printMade = false;
@@ -36,7 +36,9 @@ Constant *putsFunc;
 
 +(Value *) VariableExpr_Codegen:(DSIdentifierString *)expr {
 	Value *V = namedValues[expr.name];
-	return V ? V : [Codegen ErrorV:"unknown variable name"];
+	if (V == 0) return [Codegen ErrorV:"unknown variable name"];
+	
+	return Builder.CreateLoad(V, [expr.name cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 +(Value *) IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr {
@@ -59,13 +61,14 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 	if ([expr.assignment isKindOfClass:DSBinaryExpression.class]) {
 		DSBinaryExpression *temp = (DSBinaryExpression *)expr.assignment;
 		v = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
+	} else if ([expr.assignment isKindOfClass:DSIdentifierString.class]) {
+		v = [self VariableExpr_Codegen:(DSIdentifierString *)expr.assignment];
 	}
 	
-	//[namedValues setObject:[NSValue valueWithBytes:&v objCType:@encode(Value)] forKey:expr.identifier];
-	namedValues[expr.identifier] = v;
-	namedTypes[expr.identifier] = expr.type.identifier;
-	
 	AllocaInst *alloca = CreateEntryBlockAlloca(func, expr.identifier);
+	
+	namedValues[expr.identifier] = alloca;
+	namedTypes[expr.identifier] = expr.type.identifier;
 	
 	Builder.CreateStore(v, alloca);
 }
@@ -103,6 +106,29 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 	}
 	
 	return [self ErrorV:"invalid binary operator"];
+}
+
++(void) Assignment_Codegen:(DSAssignment *)expr {
+	if (![expr.storage isKindOfClass:DSIdentifierString.class]) {
+		[self ErrorV:"Cannot make assignment to this expression"];
+		exit(0);
+	}
+	
+	DSIdentifierString *store = (DSIdentifierString *)expr.storage;
+	
+	Value *var = namedValues[store.name];
+	if (var == 0) [self ErrorV:"Unknown variable name"];
+	
+	Value *v = 0;
+	
+	if ([expr.expression isKindOfClass:DSBinaryExpression.class]) {
+		DSBinaryExpression *temp = (DSBinaryExpression *)expr.expression;
+		v = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
+	} else if ([expr.expression isKindOfClass:DSIdentifierString.class]) {
+		v = [self VariableExpr_Codegen:(DSIdentifierString *)expr.expression];
+	}
+	
+	Builder.CreateStore(v, var);
 }
 
 +(void) Call_Codegen:(DSCall *)expr {
@@ -166,6 +192,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 			[self Declaration_Codegen:(DSDeclaration *)child function:f];
 		} else if ([child isKindOfClass:DSCall.class]) {
 			[self Call_Codegen:(DSCall *)child];
+		} else if ([child isKindOfClass:DSAssignment.class]) {
+			[self Assignment_Codegen:(DSAssignment *)child];
 		}
 	}
 	
