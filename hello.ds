@@ -1,2 +1,12 @@
-let x = 5 + 5 * 7 - 9
-print(x)
+func add(x as Int, y as Int) -> Int {
+	return x + y
+}
+
+var a = 100
+var b = 2
+
+var x = add(a, b)
+print("Result: " + x)
+
+
+/* This is a block comment */

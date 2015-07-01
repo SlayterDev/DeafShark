@@ -248,6 +248,15 @@ public class DSIfStatement: DSConditionalStatement {}
 
 public class DSWhileStatement: DSConditionalStatement {}
 
+public class DSReturnStatement: DSExpr {
+	let statement: DSExpr
+	
+	init (statement: DSExpr, lineContext: LineContext?) {
+		self.statement = statement
+		super.init(assignable: false, lineContext: lineContext)
+	}
+}
+
 public class DSIdentifierString: DSExpr {
 	var name: String
 	

@@ -19,6 +19,6 @@
 
 @interface LLVMHelper : NSObject
 
-+(llvm::Value *) valueForArgument:(DSAST *)argument;
++(llvm::Value *) valueForArgument:(DSAST *)argument symbolTable:(std::map<NSString *, llvm::AllocaInst *>)namedValues andBuilder:(llvm::IRBuilder<>)Builder;
 
 @end
