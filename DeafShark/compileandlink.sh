@@ -7,5 +7,5 @@
 #  Copyright © 2015 Flipped Bit. All rights reserved.
 
 /usr/local/bin/llc $1 -o $2
-gcc $2 -o $3
+cc $2 -o $3 -lc
 rm $1 $2
