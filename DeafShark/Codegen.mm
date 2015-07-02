@@ -9,6 +9,7 @@
 #import "Codegen.h"
 #import "DeafShark-Swift.h"
 #import "LLVMHelper.h"
+#import "OutputUtils.h"
 
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Module.h"
@@ -326,7 +327,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 	
 	theModule->dump();
 	
-	[Codegen writeBitcode];
+	[OutputUtils writeBitcode:theModule];
 }
 
 +(void) writeBitcode {
