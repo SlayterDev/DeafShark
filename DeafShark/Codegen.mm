@@ -330,38 +330,4 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 	[OutputUtils writeBitcode:theModule];
 }
 
-+(void) writeBitcode {
-	std::error_code ec;
-	
-	NSArray *args = [[NSProcessInfo processInfo] arguments];
-	
-	NSString *outputPath;
-	if ([args containsObject:@"-o"]) {
-		int index = (int)([args indexOfObject:@"-o"] + 1);
-		if (index < args.count) {
-			outputPath = args[index];
-		} else {
-			NSLog(@"Missing output argument");
-			exit(1);
-		}
-	} else {
-		NSString *filename = nil;
-		for (NSString *arg in args) {
-			if ([arg hasSuffix:@".ds"]) {
-				filename = [arg stringByDeletingPathExtension];
-				break;
-			}
-		}
-		
-		if (filename != nil) {
-			outputPath = [filename stringByAppendingPathExtension:@"bc"];
-		}
-	}
-	
-	raw_fd_ostream output([outputPath cStringUsingEncoding:NSUTF8StringEncoding], ec,
-						  (sys::fs::OpenFlags)0);
-	
-	WriteBitcodeToFile(theModule, output);
-}
-
 @end
