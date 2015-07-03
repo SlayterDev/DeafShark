@@ -50,9 +50,17 @@ Constant *putsFunc;
 	return namedTypes[expr.name];
 }
 
-static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varName) {
+static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *var) {
+	NSString *varName = var.identifier;
+	
 	IRBuilder<> TmpB(&theFunction->getEntryBlock(), theFunction->getEntryBlock().begin());
 	
+	if ([var.type.identifier isEqual:@"Int"])
+		return TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0, [varName cStringUsingEncoding:NSASCIIStringEncoding]);
+	else if ([var.type.identifier isEqual:@"String"])
+		return TmpB.CreateAlloca(Type::getInt8PtrTy(getGlobalContext()), 0, [varName cStringUsingEncoding:NSUTF8StringEncoding]);
+	
+	// Int by default
 	return TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0, [varName cStringUsingEncoding:NSASCIIStringEncoding]);
 }
 
@@ -73,7 +81,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 		exit(1);
 	}
 	
-	AllocaInst *alloca = CreateEntryBlockAlloca(func, expr.identifier);
+	AllocaInst *alloca = CreateEntryBlockAlloca(func, expr);
 	
 	namedValues[expr.identifier] = alloca;
 	namedTypes[expr.identifier] = expr.type.identifier;
@@ -198,9 +206,15 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 }
 
 +(Function *) Prototype_Codegen:(DSFunctionPrototype *)expr {
-	std::vector<Type *> Ints(expr.parameters.count, Type::getInt32Ty(getGlobalContext()));
+	//std::vector<Type *> Ints(expr.parameters.count, Type::getInt32Ty(getGlobalContext()));
 	
-	FunctionType *FT = FunctionType::get(Type::getInt32Ty(getGlobalContext()), Ints, false);
+	std::vector<Type *> argsVec;
+	
+	for (DSDeclaration *argument in expr.parameters) {
+		argsVec.push_back([LLVMHelper typeForArgument:argument.type withBuilder:Builder]);
+	}
+	
+	FunctionType *FT = FunctionType::get(Type::getInt32Ty(getGlobalContext()), argsVec, false);
 	
 	Function *F = Function::Create(FT, Function::ExternalLinkage, [expr.identifier cStringUsingEncoding:NSUTF8StringEncoding], theModule);
 	
@@ -226,11 +240,12 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 +(void) CreateArgumentAlloca:(Function *)F withPrototype:(DSFunctionPrototype *)expr {
 	Function::arg_iterator AI = F->arg_begin();
 	for (unsigned Idx = 0, e = (unsigned)expr.parameters.count; Idx != e; Idx++, AI++) {
-		AllocaInst *alloca = CreateEntryBlockAlloca(F, expr.parameters[Idx].identifier);
+		AllocaInst *alloca = CreateEntryBlockAlloca(F, expr.parameters[Idx]);
 		
 		Builder.CreateStore(AI, alloca);
 		
 		namedValues[expr.parameters[Idx].identifier] = alloca;
+		namedTypes[expr.parameters[Idx].identifier] = expr.parameters[Idx].type.identifier;
 	}
 }
 

@@ -27,9 +27,23 @@ using namespace llvm;
 		return ConstantInt::get(getGlobalContext(), APInt(32, (int)intLit.val));
 	} else if ([argument isKindOfClass:DSIdentifierString.class]) {
 		return [self VariableExpr_Codegen:(DSIdentifierString *)argument symbolTable:namedValues andBuilder:Builder];
+	} else if ([argument isKindOfClass:DSStringLiteral.class]) {
+		DSStringLiteral *stringLit = (DSStringLiteral *)argument;
+		return Builder.CreateGlobalStringPtr([stringLit.val cStringUsingEncoding:NSUTF8StringEncoding]);
 	}
 	
 	return nil;
+}
+
+// Get LLVM type for DSAST. Returns Int32 by default
++(Type *) typeForArgument:(DSType *)argument withBuilder:(IRBuilder<>)Builder {
+	if ([argument.identifier isEqual:@"String"]) {
+		return Type::getInt8PtrTy(getGlobalContext());
+	} else if ([argument isEqual:@"Int"]) {
+		return Type::getInt32Ty(getGlobalContext());
+	}
+	
+	return Builder.getInt32Ty();
 }
 
 @end
