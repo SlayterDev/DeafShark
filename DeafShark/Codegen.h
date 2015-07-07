@@ -8,13 +8,14 @@
 
 #import <Foundation/Foundation.h>
 
+
 @class DSBody;
+@class DSExpr;
 @class DSIdentifierString;
 
 @interface Codegen : NSObject
 
 +(void) DSBody_Codegen:(DSBody *)body;
 +(NSString *) typeForIdentifier:(DSIdentifierString *)expr;
-
 
 @end
