@@ -16,7 +16,7 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 	case LeftBracket, LeftBrace, RightBracket, RightBrace
 	case Arrow, Semicolon, Comma
 	
-	case While, If, Return, Else
+	case While, For, If, Return, Else
 	
 	case IntegerLiteral(Int), FloatLiteral(Float), StringLiteral(String), BooleanLiteral(Bool)
 	
@@ -80,6 +80,8 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			return "else"
 		case .Return:
 			return "return"
+		case .For:
+			return "for"
 		}
 	}
 	
@@ -142,6 +144,12 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			// Match while
 			.match(/"^while(?!\(identifierRegex))") {
 				tokens.append(.While)
+				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
+				linepos += $0[0].characters.count
+			}?
+			// Match for
+			.match(/"^for(?!\(identifierRegex))") {
+				tokens.append(.For)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?

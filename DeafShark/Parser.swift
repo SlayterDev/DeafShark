@@ -151,6 +151,8 @@ public class DSParser {
 			return parseFunctionDeclaration()
 		case .While:
 			fallthrough
+		case .For:
+			fallthrough
 		case .If:
 			return parseConditionalStatement()
 		case .Return:
@@ -240,6 +242,8 @@ public class DSParser {
 		if let declaration = parseStorageDeclaration() {
 			declaration.isConstant = isConstant
 			return declaration
+		} else {
+			print("Some damn error")
 		}
 		return nil
 	}
@@ -329,6 +333,9 @@ public class DSParser {
 		let context = self.lineContext[0]
 		var token: DeafSharkToken = .If
 		switch tokens[0] {
+		case .For:
+			consumeToken()
+			return parseForStatement()
 		case .If:
 			fallthrough
 		case .While:
@@ -363,6 +370,54 @@ public class DSParser {
 		}
 		
 		return nil
+	}
+	
+	func parseForStatement() -> DSForStatement? {
+		let initial: DSAST
+		switch tokens[0] {
+		case .VariableDeclaration:
+			fallthrough
+		case .ConstantDeclaration:
+			fallthrough
+		case .Identifier(_):
+			initial = parseStatement()!
+		default:
+			errors.append(DSError(message: "invalid for loop initialization", lineContext: self.lineContext[0]))
+			return nil
+		}
+		
+		switch tokens[0] {
+		case .Semicolon:
+			consumeToken()
+		default:
+			errors.append(DSError(message: "Missing expected semicolon.", lineContext: self.lineContext[0]))
+		}
+		
+		let condition = parseExpression()
+		
+		switch tokens[0] {
+		case .Semicolon:
+			consumeToken()
+		default:
+			errors.append(DSError(message: "Missing expected semicolon.", lineContext: self.lineContext[0]))
+		}
+		
+		let increment = parseExpression()
+		
+		switch tokens[0] {
+		case .Semicolon:
+			consumeToken()
+		default:
+			errors.append(DSError(message: "Missing expected semicolon.", lineContext: self.lineContext[0]))
+		}
+		
+		if let body = parseBody(true) {
+			return DSForStatement(initial: initial, condition: condition!, increment: increment!, body: body, lineContext: self.lineContext[0])
+		} else {
+			errors.append(DSError(message: "Missing expected 'for' body.", lineContext: self.lineContext[0]))
+			return nil
+		}
+		
 	}
 	
 	func parsePrimary() -> DSExpr? {

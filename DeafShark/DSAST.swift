@@ -268,7 +268,18 @@ public class DSIfStatement: DSConditionalStatement {
 
 public class DSWhileStatement: DSConditionalStatement {
 	override public var description: String {
-		return "DeafSharkWhileStatement - condition:\(self.cond.description)"
+		return "DeafSharkWhileStatement - condition:\(self.cond.description)" + self.body.description
+	}
+}
+
+public class DSForStatement: DSConditionalStatement {
+	let initial: DSAST
+	let increment: DSExpr
+	
+	init(initial: DSAST, condition: DSExpr, increment: DSExpr, body: DSBody, lineContext: LineContext?) {
+		self.initial = initial
+		self.increment = increment
+		super.init(condition: condition, body: body, lineContext: lineContext)
 	}
 }
 
