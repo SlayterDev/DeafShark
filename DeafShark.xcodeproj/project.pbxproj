@@ -314,6 +314,10 @@
 					"$(inherited)",
 					/usr/local/lib,
 				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-Wno-conversion",
+				);
 				OTHER_LDFLAGS = (
 					"-lncurses",
 					"-lLLVMCodeGen",
@@ -346,6 +350,10 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local/lib,
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-Wno-conversion",
 				);
 				OTHER_LDFLAGS = (
 					"-lncurses",
