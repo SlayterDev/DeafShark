@@ -272,6 +272,17 @@ public class DSWhileStatement: DSConditionalStatement {
 	}
 }
 
+public class DSForStatement: DSConditionalStatement {
+	let initial: DSDeclaration
+	let increment: DSExpr
+	
+	init(initial: DSDeclaration, condition: DSExpr, increment: DSExpr, body: DSBody, lineContext: LineContext?) {
+		self.initial = initial
+		self.increment = increment
+		super.init(condition: condition, body: body, lineContext: lineContext)
+	}
+}
+
 public class DSReturnStatement: DSExpr {
 	let statement: DSExpr
 	

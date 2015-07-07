@@ -207,6 +207,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 }
 
 +(Value *) Expression_Codegen:(DSExpr *)expr {
+	NSLog(@"%@", expr);
+	
 	if ([expr isKindOfClass:DSCall.class]) {
 		return [self Call_Codegen:(DSCall *)expr];
 	} else if ([expr isKindOfClass:DSAssignment.class]) {
@@ -214,6 +216,9 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	} else if ([expr isKindOfClass:DSBinaryExpression.class]) {
 		DSBinaryExpression *temp = (DSBinaryExpression *)expr;
 		return [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
+	} else if ([expr isKindOfClass:DSSignedIntegerLiteral.class]) {
+		NSLog(@"Returning an int");
+		return [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr];
 	} else {
 		return 0;
 	}
@@ -370,13 +375,10 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 
 +(Value *) WhileLoop_Codegen:(DSWhileStatement *)expr {
 	Function *theFunc = Builder.GetInsertBlock()->getParent();
-	//BasicBlock *preHeaderBB = Builder.GetInsertBlock();
 	BasicBlock *loopBB = BasicBlock::Create(getGlobalContext(), "loop", theFunc);
 	
 	Builder.CreateBr(loopBB);
 	Builder.SetInsertPoint(loopBB);
-	
-	//PHINode *Variable = Builder.CreatePHI(Type::getInt32Ty(getGlobalContext()), 2, )
 	
 	if ([Codegen Body_Codegen:expr.body andFunction:theFunc] == 0)
 		return 0;
@@ -387,11 +389,70 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	
 	cond = Builder.CreateFCmpONE(cond, ConstantFP::get(getGlobalContext(), APFloat(0.0)), "loopcond");
 	
-	//BasicBlock *loopEndBB = Builder.GetInsertBlock();
 	BasicBlock *afterBB = BasicBlock::Create(getGlobalContext(), "afterLoop", theFunc);
 	
 	Builder.CreateCondBr(cond, loopBB, afterBB);
 	Builder.SetInsertPoint(afterBB);
+	
+	return Constant::getNullValue(Type::getDoubleTy(getGlobalContext()));
+}
+
++(Value *) ForLoop_Codegen:(DSForStatement *)expr {
+	NSLog(@"Make for loop");
+	
+	Function *theFunc = Builder.GetInsertBlock()->getParent();
+	
+	AllocaInst *alloca = CreateEntryBlockAlloca(theFunc, expr.initial);
+	
+	Value *startVal = [self Expression_Codegen:expr.initial.assignment];
+	if (startVal == 0) {
+		NSLog(@"Bad start val");
+		return 0;
+	}
+	
+	Builder.CreateStore(startVal, alloca);
+	
+	BasicBlock *loopBB = BasicBlock::Create(getGlobalContext(), "loop", theFunc);
+	
+	Builder.CreateBr(loopBB);
+	Builder.SetInsertPoint(loopBB);
+	
+	
+	AllocaInst *oldVal = namedValues[expr.initial.identifier];
+	namedValues[expr.initial.identifier] = alloca;
+	
+	if ([self Body_Codegen:expr.body andFunction:theFunc] == 0)
+		return 0;
+	
+	Value *stepVal;
+	if (expr.increment) {
+		stepVal = [self Expression_Codegen:expr.increment];
+		if (stepVal == 0)
+			return 0;
+	} else {
+		stepVal = ConstantInt::get(getGlobalContext(), APInt(32, 1));
+	}
+	
+	Value *endCond = [self Expression_Codegen:expr.cond];
+	if (endCond == 0)
+		return 0;
+	
+	/*Value *curVar = Builder.CreateLoad(alloca, [expr.initial.identifier cStringUsingEncoding:NSUTF8StringEncoding]);
+	Value *nextVar = Builder.CreateAdd(curVar, stepVal, "nextVar");
+	Builder.CreateStore(nextVar, alloca);*/
+	//[self Expression_Codegen:expr.increment];
+	
+	endCond = Builder.CreateFCmpONE(endCond, ConstantFP::get(getGlobalContext(), APFloat(0.0)), "loopCond");
+	
+	BasicBlock *afterBB = BasicBlock::Create(getGlobalContext(), "afterloop", theFunc);
+	
+	Builder.CreateCondBr(endCond, loopBB, afterBB);
+	Builder.SetInsertPoint(afterBB);
+	
+	if (oldVal)
+		namedValues[expr.initial.identifier] = oldVal;
+	else
+		namedValues.erase(expr.initial.identifier);
 	
 	return Constant::getNullValue(Type::getDoubleTy(getGlobalContext()));
 }
@@ -419,6 +480,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 			[self IfExpr_Codegen:(DSIfStatement *)child];
 		} else if ([child isKindOfClass:DSWhileStatement.class]) {
 			[self WhileLoop_Codegen:(DSWhileStatement *)child];
+		} else if ([child isKindOfClass:DSForStatement.class]) {
+			[self ForLoop_Codegen:(DSForStatement *)child];
 		} else if ([child isKindOfClass:DSBinaryExpression.class]) {
 			DSBinaryExpression *temp = (DSBinaryExpression *)child;
 			if ([[CompilerHelper sharedInstance] isValidBinaryAssignment:temp]) {
@@ -469,6 +532,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 			[self IfExpr_Codegen:(DSIfStatement *)child];
 		} else if ([child isKindOfClass:DSWhileStatement.class]) {
 			[self WhileLoop_Codegen:(DSWhileStatement *)child];
+		} else if ([child isKindOfClass:DSForStatement.class]) {
+			[self ForLoop_Codegen:(DSForStatement *)child];
 		}
 	}
 	
