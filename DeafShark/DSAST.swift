@@ -11,6 +11,10 @@ import Cocoa
 @objc public class DSAST: NSObject {
 	var children: [DSAST] = []
 	
+	override init() {
+		
+	}
+	
 	init(lineContext: LineContext?) {
 		super.init()
 		self.lineContext = lineContext
@@ -59,6 +63,11 @@ public class DSExpr: DSAST {
 
 public class DSType: DSAST {
 	var identifier: String
+	
+	override init() {
+		self.identifier = ""
+		super.init()
+	}
 	
 	init(identifier: String, lineContext: LineContext?) {
 		self.identifier = identifier
