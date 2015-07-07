@@ -242,9 +242,8 @@ public class DSParser {
 		if let declaration = parseStorageDeclaration() {
 			declaration.isConstant = isConstant
 			return declaration
-		} else {
-			print("Some damn error")
 		}
+		
 		return nil
 	}
 	
@@ -282,6 +281,12 @@ public class DSParser {
 					break
 				}
 			}
+			
+			if declaration.assignment != nil && declaration.type == nil {
+				errors.append(DSError(message: "If no initialization given, declaration must have a type", lineContext: self.lineContext[0]))
+				return nil
+			}
+			
 			return (isFunctionParameter) ? declaration as! DSFunctionParameter : declaration
 		} else {
 			return nil

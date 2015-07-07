@@ -1,7 +1,7 @@
 var n = 25
 var first = 0
 var second = 1
-var next = 0
+var next as Int
 
 print("The first " + n + " fibonacci numbers are:")
 

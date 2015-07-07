@@ -74,21 +74,25 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	} else if ([expr.assignment isKindOfClass:DSSignedIntegerLiteral.class]) {
 		v = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr.assignment];
 		type.identifier = @"Int";
+	} else if (expr.assignment == nil) {
+		assert(expr.type != nil);
 	} else {
 		[self ErrorV:"Unsupported declaration"];
 		exit(1);
 	}
 	
-	expr.type = type;
-	
-	//assert(expr.type.identifier != nil);
+	if (expr.type == nil)
+		expr.type = type;
 	
 	AllocaInst *alloca = CreateEntryBlockAlloca(func, expr);
 	
 	namedValues[expr.identifier] = alloca;
 	namedTypes[expr.identifier] = expr.type.identifier;
 	
-	return Builder.CreateStore(v, alloca);
+	if (v != 0)
+		return Builder.CreateStore(v, alloca);
+	else
+		return 0;
 }
 
 +(Value *) BinaryExp_Codegen:(DSExpr *)LHS andRHS:(DSExpr *)RHS andExpr:(DSBinaryExpression *)expr {
