@@ -21,6 +21,17 @@ import Cocoa
 		return self.printCallArgs
 	}
 	
+	func formatForType(type: String) -> String {
+		switch (type) {
+		case "Int":
+			return "%d"
+		case "String":
+			return "%s"
+		default:
+			return "%d"
+		}
+	}
+	
 	func getPrintFormatString(call: DSCall) -> NSString {
 		let args = call.children
 		printCallArgs = [DSAST]()
@@ -41,7 +52,8 @@ import Cocoa
 				format += binExpForm
 				printCallArgs += binExpArgs
 			case let expr as DSIdentifierString:
-				format += "%d"
+				let type = Codegen.typeForIdentifier(expr)
+				format += formatForType(type)
 				printCallArgs.append(expr)
 			default:
 				break

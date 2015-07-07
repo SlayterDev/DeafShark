@@ -9,13 +9,7 @@
 #import "Codegen.h"
 #import "DeafShark-Swift.h"
 #import "LLVMHelper.h"
-
-#include "llvm/IR/IRBuilder.h"
-#include "llvm/IR/Module.h"
-#include "llvm/IR/LLVMContext.h"
-#include "llvm/IR/DerivedTypes.h"
-#include "llvm/Bitcode/ReaderWriter.h"
-#include "llvm/Support/raw_ostream.h"
+#import "OutputUtils.h"
 
 @implementation Codegen
 
@@ -49,13 +43,21 @@ Constant *putsFunc;
 	return namedTypes[expr.name];
 }
 
-static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varName) {
+static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *var) {
+	NSString *varName = var.identifier;
+	
 	IRBuilder<> TmpB(&theFunction->getEntryBlock(), theFunction->getEntryBlock().begin());
 	
+	if ([var.type.identifier isEqual:@"Int"])
+		return TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0, [varName cStringUsingEncoding:NSASCIIStringEncoding]);
+	else if ([var.type.identifier isEqual:@"String"])
+		return TmpB.CreateAlloca(Type::getInt8PtrTy(getGlobalContext()), 0, [varName cStringUsingEncoding:NSUTF8StringEncoding]);
+	
+	// Int by default
 	return TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0, [varName cStringUsingEncoding:NSASCIIStringEncoding]);
 }
 
-+(void) Declaration_Codegen:(DSDeclaration *)expr function:(Function *)func {
++(Value *) Declaration_Codegen:(DSDeclaration *)expr function:(Function *)func {
 	Value *v = 0;
 	
 	if ([expr.assignment isKindOfClass:DSBinaryExpression.class]) {
@@ -72,12 +74,12 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 		exit(1);
 	}
 	
-	AllocaInst *alloca = CreateEntryBlockAlloca(func, expr.identifier);
+	AllocaInst *alloca = CreateEntryBlockAlloca(func, expr);
 	
 	namedValues[expr.identifier] = alloca;
 	namedTypes[expr.identifier] = expr.type.identifier;
 	
-	Builder.CreateStore(v, alloca);
+	return Builder.CreateStore(v, alloca);
 }
 
 +(Value *) BinaryExp_Codegen:(DSExpr *)LHS andRHS:(DSExpr *)RHS andExpr:(DSBinaryExpression *)expr {
@@ -110,12 +112,83 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 		return Builder.CreateMul(L, R);
 	} else if ([expr.op isEqual: @"/"]) {
 		return Builder.CreateSDiv(L, R);
+	} else if ([expr.op isEqual: @"<"]) {
+		L = Builder.CreateICmpSLT(L, R);
+		return Builder.CreateUIToFP(L, Type::getDoubleTy(getGlobalContext()));
+	} else if ([expr.op isEqual:@">"]) {
+		L = Builder.CreateICmpSGT(L, R);
+		return Builder.CreateUIToFP(L, Type::getDoubleTy(getGlobalContext()));
+	} else if ([expr.op isEqual:@"=="]) {
+		L = Builder.CreateICmpEQ(L, R);
+		return Builder.CreateUIToFP(L, Type::getDoubleTy(getGlobalContext()));
 	}
 	
 	return [self ErrorV:"invalid binary operator"];
 }
 
-+(void) Assignment_Codegen:(DSAssignment *)expr {
++(Value *) IfExpr_Codegen:(DSIfStatement *)expr {
+	Value *condv = [self Expression_Codegen:expr.cond];
+	if (condv == 0) {
+		return 0;
+	}
+	
+	condv = Builder.CreateFCmpONE(condv, ConstantFP::get(getGlobalContext(), APFloat(0.0)), "ifcond");
+	
+	Function *theFunc = Builder.GetInsertBlock()->getParent();
+	
+	BasicBlock *thenBB  = BasicBlock::Create(getGlobalContext(), "then", theFunc);
+	BasicBlock *elseBB  = BasicBlock::Create(getGlobalContext(), "else");
+	BasicBlock *mergeBB = BasicBlock::Create(getGlobalContext(), "ifcont");
+	
+	Builder.CreateCondBr(condv, thenBB, elseBB);
+	
+	Builder.SetInsertPoint(thenBB);
+	Value *thenV = [self Body_Codegen:expr.body andFunction:theFunc];
+	if (thenV == 0) {
+		return 0;
+	}
+	
+	Builder.CreateBr(mergeBB);
+	
+	thenBB = Builder.GetInsertBlock();
+	
+	theFunc->getBasicBlockList().push_back(elseBB);
+	Builder.SetInsertPoint(elseBB);
+	
+	Value *elseV = 0;
+	if (expr.elseBody != nil) {
+		 elseV = [self Body_Codegen:expr.elseBody andFunction:theFunc];
+		if (elseV == 0)
+			return 0;
+	}
+	
+	Builder.CreateBr(mergeBB);
+	elseBB = Builder.GetInsertBlock();
+	
+	theFunc->getBasicBlockList().push_back(mergeBB);
+	Builder.SetInsertPoint(mergeBB);
+	PHINode *PN = Builder.CreatePHI(Type::getInt32Ty(getGlobalContext()), 2, "iftmp");
+	
+	PN->addIncoming(thenV, thenBB);
+	PN->addIncoming(elseV, elseBB);
+	
+	return PN;
+}
+
++(Value *) Expression_Codegen:(DSExpr *)expr {
+	if ([expr isKindOfClass:DSCall.class]) {
+		return [self Call_Codegen:(DSCall *)expr];
+	} else if ([expr isKindOfClass:DSAssignment.class]) {
+		return [self Assignment_Codegen:(DSAssignment *)expr];
+	} else if ([expr isKindOfClass:DSBinaryExpression.class]) {
+		DSBinaryExpression *temp = (DSBinaryExpression *)expr;
+		return [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
+	} else {
+		return 0;
+	}
+}
+
++(Value *) Assignment_Codegen:(DSAssignment *)expr {
 	if (![expr.storage isKindOfClass:DSIdentifierString.class]) {
 		[self ErrorV:"Cannot make assignment to this expression"];
 		exit(0);
@@ -137,7 +210,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 		v = [self Call_Codegen:(DSCall *)expr.expression];
 	}
 	
-	Builder.CreateStore(v, var);
+	return Builder.CreateStore(v, var);
 }
 
 +(Value *) Call_Codegen:(DSCall *)expr {
@@ -197,9 +270,15 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 }
 
 +(Function *) Prototype_Codegen:(DSFunctionPrototype *)expr {
-	std::vector<Type *> Ints(expr.parameters.count, Type::getInt32Ty(getGlobalContext()));
+	//std::vector<Type *> Ints(expr.parameters.count, Type::getInt32Ty(getGlobalContext()));
 	
-	FunctionType *FT = FunctionType::get(Type::getInt32Ty(getGlobalContext()), Ints, false);
+	std::vector<Type *> argsVec;
+	
+	for (DSDeclaration *argument in expr.parameters) {
+		argsVec.push_back([LLVMHelper typeForArgument:argument.type withBuilder:Builder]);
+	}
+	
+	FunctionType *FT = FunctionType::get(Type::getInt32Ty(getGlobalContext()), argsVec, false);
 	
 	Function *F = Function::Create(FT, Function::ExternalLinkage, [expr.identifier cStringUsingEncoding:NSUTF8StringEncoding], theModule);
 	
@@ -225,11 +304,12 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 +(void) CreateArgumentAlloca:(Function *)F withPrototype:(DSFunctionPrototype *)expr {
 	Function::arg_iterator AI = F->arg_begin();
 	for (unsigned Idx = 0, e = (unsigned)expr.parameters.count; Idx != e; Idx++, AI++) {
-		AllocaInst *alloca = CreateEntryBlockAlloca(F, expr.parameters[Idx].identifier);
+		AllocaInst *alloca = CreateEntryBlockAlloca(F, expr.parameters[Idx]);
 		
 		Builder.CreateStore(AI, alloca);
 		
 		namedValues[expr.parameters[Idx].identifier] = alloca;
+		namedTypes[expr.parameters[Idx].identifier] = expr.parameters[Idx].type.identifier;
 	}
 }
 
@@ -257,6 +337,34 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 	return 0;
 }
 
++(Value *) WhileLoop_Codegen:(DSWhileStatement *)expr {
+	Function *theFunc = Builder.GetInsertBlock()->getParent();
+	//BasicBlock *preHeaderBB = Builder.GetInsertBlock();
+	BasicBlock *loopBB = BasicBlock::Create(getGlobalContext(), "loop", theFunc);
+	
+	Builder.CreateBr(loopBB);
+	Builder.SetInsertPoint(loopBB);
+	
+	//PHINode *Variable = Builder.CreatePHI(Type::getInt32Ty(getGlobalContext()), 2, )
+	
+	if ([Codegen Body_Codegen:expr.body andFunction:theFunc] == 0)
+		return 0;
+	
+	Value *cond = [Codegen Expression_Codegen:expr.cond];
+	if (cond == 0)
+		return 0;
+	
+	cond = Builder.CreateFCmpONE(cond, ConstantFP::get(getGlobalContext(), APFloat(0.0)), "loopcond");
+	
+	//BasicBlock *loopEndBB = Builder.GetInsertBlock();
+	BasicBlock *afterBB = BasicBlock::Create(getGlobalContext(), "afterLoop", theFunc);
+	
+	Builder.CreateCondBr(cond, loopBB, afterBB);
+	Builder.SetInsertPoint(afterBB);
+	
+	return Constant::getNullValue(Type::getDoubleTy(getGlobalContext()));
+}
+
 +(Value *) Body_Codegen:(DSBody *)body andFunction:(Function *)f {
 	Value *returnVal = 0;
 	
@@ -276,8 +384,15 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 			[self Call_Codegen:(DSCall *)child];
 		} else if ([child isKindOfClass:DSAssignment.class]) {
 			[self Assignment_Codegen:(DSAssignment *)child];
+		} else if ([child isKindOfClass:DSIfStatement.class]) {
+			[self IfExpr_Codegen:(DSIfStatement *)child];
+		} else if ([child isKindOfClass:DSWhileStatement.class]) {
+			[self WhileLoop_Codegen:(DSWhileStatement *)child];
 		}
 	}
+	
+	if (returnVal == 0)
+		returnVal = ConstantInt::get(getGlobalContext(), APInt(32, 0));
 	
 	return returnVal;
 }
@@ -314,6 +429,10 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 			[self Call_Codegen:(DSCall *)child];
 		} else if ([child isKindOfClass:DSAssignment.class]) {
 			[self Assignment_Codegen:(DSAssignment *)child];
+		} else if ([child isKindOfClass:DSIfStatement.class]) {
+			[self IfExpr_Codegen:(DSIfStatement *)child];
+		} else if ([child isKindOfClass:DSWhileStatement.class]) {
+			[self WhileLoop_Codegen:(DSWhileStatement *)child];
 		}
 	}
 	
@@ -323,41 +442,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, NSString *varNa
 	
 	theModule->dump();
 	
-	[Codegen writeBitcode];
-}
-
-+(void) writeBitcode {
-	std::error_code ec;
-	
-	NSArray *args = [[NSProcessInfo processInfo] arguments];
-	
-	NSString *outputPath;
-	if ([args containsObject:@"-o"]) {
-		int index = (int)([args indexOfObject:@"-o"] + 1);
-		if (index < args.count) {
-			outputPath = args[index];
-		} else {
-			NSLog(@"Missing output argument");
-			exit(1);
-		}
-	} else {
-		NSString *filename = nil;
-		for (NSString *arg in args) {
-			if ([arg hasSuffix:@".ds"]) {
-				filename = [arg stringByDeletingPathExtension];
-				break;
-			}
-		}
-		
-		if (filename != nil) {
-			outputPath = [filename stringByAppendingPathExtension:@"bc"];
-		}
-	}
-	
-	raw_fd_ostream output([outputPath cStringUsingEncoding:NSUTF8StringEncoding], ec,
-						  (sys::fs::OpenFlags)0);
-	
-	WriteBitcodeToFile(theModule, output);
+	[OutputUtils writeBitcode:theModule];
 }
 
 @end

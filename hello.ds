@@ -1,12 +1,16 @@
-func add(x as Int, y as Int) -> Int {
-	return x + y
+var a = 100
+
+if a == 100 {
+	print("A is equal to 100")
+} else {
+	print("A is not equal to 100")
 }
 
-var a = 100
-var b = 2
+var i = 0
 
-var x = add(a, b)
-print("Result: " + x)
-
+while i < 10 {
+	print("Hello, World")
+	i = i + 1
+}
 
 /* This is a block comment */

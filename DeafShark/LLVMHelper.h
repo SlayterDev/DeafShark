@@ -16,9 +16,11 @@
 #include "llvm/Support/raw_ostream.h"
 
 @class DSAST;
+@class DSType;
 
 @interface LLVMHelper : NSObject
 
 +(llvm::Value *) valueForArgument:(DSAST *)argument symbolTable:(std::map<NSString *, llvm::AllocaInst *>)namedValues andBuilder:(llvm::IRBuilder<>)Builder;
++(llvm::Type *) typeForArgument:(DSType *)argument withBuilder:(llvm::IRBuilder<>)Builder;
 
 @end

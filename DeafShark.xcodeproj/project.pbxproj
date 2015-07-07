@@ -14,6 +14,8 @@
 		021861FC1B2F64E000D0ED84 /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021861FB1B2F64E000D0ED84 /* Error.swift */; };
 		021861FE1B305F0700D0ED84 /* DSAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021861FD1B305F0700D0ED84 /* DSAST.swift */; };
 		021862001B30636600D0ED84 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021861FF1B30636600D0ED84 /* Parser.swift */; };
+		027447AD1B4571EC009EA56A /* OutputUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = 027447AC1B4571EC009EA56A /* OutputUtils.mm */; };
+		027447B31B459D97009EA56A /* compileandlink.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 027447AE1B4598D5009EA56A /* compileandlink.sh */; };
 		02EC96B71B42DC9A00D3D7E1 /* CompilerHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02EC96B61B42DC9A00D3D7E1 /* CompilerHelper.swift */; };
 		02EC96BA1B42E5EE00D3D7E1 /* LLVMHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02EC96B91B42E5EE00D3D7E1 /* LLVMHelper.mm */; };
 		02EC96BC1B42E7F800D3D7E1 /* Codegen.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02EC96BB1B42E7F800D3D7E1 /* Codegen.mm */; };
@@ -22,12 +24,13 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		021861E91B2F544E00D0ED84 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
+			buildActionMask = 12;
+			dstPath = usr/local/DeafShark;
 			dstSubfolderSpec = 0;
 			files = (
+				027447B31B459D97009EA56A /* compileandlink.sh in CopyFiles */,
 			);
-			runOnlyForDeploymentPostprocessing = 1;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -40,6 +43,9 @@
 		021861FB1B2F64E000D0ED84 /* Error.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Error.swift; sourceTree = "<group>"; };
 		021861FD1B305F0700D0ED84 /* DSAST.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DSAST.swift; sourceTree = "<group>"; };
 		021861FF1B30636600D0ED84 /* Parser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Parser.swift; sourceTree = "<group>"; };
+		027447AB1B4571EC009EA56A /* OutputUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OutputUtils.h; sourceTree = "<group>"; };
+		027447AC1B4571EC009EA56A /* OutputUtils.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = OutputUtils.mm; sourceTree = "<group>"; };
+		027447AE1B4598D5009EA56A /* compileandlink.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = compileandlink.sh; path = /Users/Slayter/Xcode/Mac/DeafShark/DeafShark/compileandlink.sh; sourceTree = "<absolute>"; };
 		02B4A8D41B384C23006C3669 /* DeafShark-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DeafShark-Bridging-Header.h"; sourceTree = "<group>"; };
 		02B4A8D71B39A2CC006C3669 /* Codegen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Codegen.h; sourceTree = "<group>"; };
 		02EC96B61B42DC9A00D3D7E1 /* CompilerHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompilerHelper.swift; sourceTree = "<group>"; };
@@ -90,11 +96,14 @@
 		02EC96BD1B42EBBB00D3D7E1 /* Compiler */ = {
 			isa = PBXGroup;
 			children = (
+				027447AE1B4598D5009EA56A /* compileandlink.sh */,
 				02EC96B61B42DC9A00D3D7E1 /* CompilerHelper.swift */,
 				02B4A8D71B39A2CC006C3669 /* Codegen.h */,
 				02EC96BB1B42E7F800D3D7E1 /* Codegen.mm */,
 				02EC96B81B42E5EE00D3D7E1 /* LLVMHelper.h */,
 				02EC96B91B42E5EE00D3D7E1 /* LLVMHelper.mm */,
+				027447AB1B4571EC009EA56A /* OutputUtils.h */,
+				027447AC1B4571EC009EA56A /* OutputUtils.mm */,
 			);
 			name = Compiler;
 			sourceTree = "<group>";
@@ -137,6 +146,7 @@
 				021861E71B2F544E00D0ED84 /* Sources */,
 				021861E81B2F544E00D0ED84 /* Frameworks */,
 				021861E91B2F544E00D0ED84 /* CopyFiles */,
+				027447B11B459BF8009EA56A /* Resources */,
 			);
 			buildRules = (
 			);
@@ -178,6 +188,16 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		027447B11B459BF8009EA56A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		021861E71B2F544E00D0ED84 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -189,6 +209,7 @@
 				021861F61B2F57C500D0ED84 /* Extensions.swift in Sources */,
 				021861FC1B2F64E000D0ED84 /* Error.swift in Sources */,
 				021861F81B2F5D0400D0ED84 /* Tokens.swift in Sources */,
+				027447AD1B4571EC009EA56A /* OutputUtils.mm in Sources */,
 				021862001B30636600D0ED84 /* Parser.swift in Sources */,
 				02EC96BA1B42E5EE00D3D7E1 /* LLVMHelper.mm in Sources */,
 				02EC96B71B42DC9A00D3D7E1 /* CompilerHelper.swift in Sources */,
