@@ -60,19 +60,28 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 +(Value *) Declaration_Codegen:(DSDeclaration *)expr function:(Function *)func {
 	Value *v = 0;
 	
+	DSType *type = [[DSType alloc] init];
 	if ([expr.assignment isKindOfClass:DSBinaryExpression.class]) {
 		DSBinaryExpression *temp = (DSBinaryExpression *)expr.assignment;
 		v = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
+		// TODO: Type promotions
 	} else if ([expr.assignment isKindOfClass:DSIdentifierString.class]) {
 		v = [self VariableExpr_Codegen:(DSIdentifierString *)expr.assignment];
+		type.identifier = @"String";
 	} else if ([expr.assignment isKindOfClass:DSCall.class]) {
 		v = [self Call_Codegen:(DSCall *)expr.assignment];
+		// TODO: function type
 	} else if ([expr.assignment isKindOfClass:DSSignedIntegerLiteral.class]) {
 		v = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr.assignment];
+		type.identifier = @"Int";
 	} else {
 		[self ErrorV:"Unsupported declaration"];
 		exit(1);
 	}
+	
+	expr.type = type;
+	
+	//assert(expr.type.identifier != nil);
 	
 	AllocaInst *alloca = CreateEntryBlockAlloca(func, expr);
 	
@@ -120,6 +129,12 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		return Builder.CreateUIToFP(L, Type::getDoubleTy(getGlobalContext()));
 	} else if ([expr.op isEqual:@"=="]) {
 		L = Builder.CreateICmpEQ(L, R);
+		return Builder.CreateUIToFP(L, Type::getDoubleTy(getGlobalContext()));
+	} else if ([expr.op isEqual:@"<="]) {
+		L = Builder.CreateICmpSLE(L, R);
+		return Builder.CreateUIToFP(L, Type::getDoubleTy(getGlobalContext()));
+	} else if ([expr.op isEqual:@">="]) {
+		L = Builder.CreateICmpSGE(L, R);
 		return Builder.CreateUIToFP(L, Type::getDoubleTy(getGlobalContext()));
 	}
 	
