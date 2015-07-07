@@ -556,6 +556,15 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	Value *retVal = ConstantInt::get(getGlobalContext(), APInt(32, 0));
 	Builder.CreateRet(retVal);
 	
+	llvm::legacy::FunctionPassManager OurFPM(theModule);
+	OurFPM.add(createBasicAliasAnalysisPass());
+	OurFPM.doInitialization();
+	
+	Module::iterator it;
+	Module::iterator end = theModule->end();
+	for (it = theModule->begin(); it != end; it++) {
+		OurFPM.run(*it);
+	}
 	
 	theModule->dump();
 	
