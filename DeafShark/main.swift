@@ -40,6 +40,4 @@ if let ast = fileContent.tokenize()?.parse() {
 	if let body = ast as? DSBody {
 		body.codeGen()
 	}
-} else {
-	print("Something went wrong")
 }
