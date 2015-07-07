@@ -64,7 +64,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	return TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0, [varName cStringUsingEncoding:NSASCIIStringEncoding]);
 }
 
-+(void) Declaration_Codegen:(DSDeclaration *)expr function:(Function *)func {
++(Value *) Declaration_Codegen:(DSDeclaration *)expr function:(Function *)func {
 	Value *v = 0;
 	
 	if ([expr.assignment isKindOfClass:DSBinaryExpression.class]) {
@@ -86,7 +86,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	namedValues[expr.identifier] = alloca;
 	namedTypes[expr.identifier] = expr.type.identifier;
 	
-	Builder.CreateStore(v, alloca);
+	return Builder.CreateStore(v, alloca);
 }
 
 +(Value *) BinaryExp_Codegen:(DSExpr *)LHS andRHS:(DSExpr *)RHS andExpr:(DSBinaryExpression *)expr {
@@ -119,12 +119,83 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		return Builder.CreateMul(L, R);
 	} else if ([expr.op isEqual: @"/"]) {
 		return Builder.CreateSDiv(L, R);
+	} else if ([expr.op isEqual: @"<"]) {
+		L = Builder.CreateICmpSLT(L, R);
+		return Builder.CreateUIToFP(L, Type::getDoubleTy(getGlobalContext()));
+	} else if ([expr.op isEqual:@">"]) {
+		L = Builder.CreateICmpSGT(L, R);
+		return Builder.CreateUIToFP(L, Type::getDoubleTy(getGlobalContext()));
+	} else if ([expr.op isEqual:@"=="]) {
+		L = Builder.CreateICmpEQ(L, R);
+		return Builder.CreateUIToFP(L, Type::getDoubleTy(getGlobalContext()));
 	}
 	
 	return [self ErrorV:"invalid binary operator"];
 }
 
-+(void) Assignment_Codegen:(DSAssignment *)expr {
++(Value *) IfExpr_Codegen:(DSIfStatement *)expr {
+	Value *condv = [self Expression_Codegen:expr.cond];
+	if (condv == 0) {
+		return 0;
+	}
+	
+	condv = Builder.CreateFCmpONE(condv, ConstantFP::get(getGlobalContext(), APFloat(0.0)), "ifcond");
+	
+	Function *theFunc = Builder.GetInsertBlock()->getParent();
+	
+	BasicBlock *thenBB  = BasicBlock::Create(getGlobalContext(), "then", theFunc);
+	BasicBlock *elseBB  = BasicBlock::Create(getGlobalContext(), "else");
+	BasicBlock *mergeBB = BasicBlock::Create(getGlobalContext(), "ifcont");
+	
+	Builder.CreateCondBr(condv, thenBB, elseBB);
+	
+	Builder.SetInsertPoint(thenBB);
+	Value *thenV = [self Body_Codegen:expr.body andFunction:theFunc];
+	if (thenV == 0) {
+		return 0;
+	}
+	
+	Builder.CreateBr(mergeBB);
+	
+	thenBB = Builder.GetInsertBlock();
+	
+	theFunc->getBasicBlockList().push_back(elseBB);
+	Builder.SetInsertPoint(elseBB);
+	
+	Value *elseV = 0;
+	if (expr.elseBody != nil) {
+		 elseV = [self Body_Codegen:expr.elseBody andFunction:theFunc];
+		if (elseV == 0)
+			return 0;
+	}
+	
+	Builder.CreateBr(mergeBB);
+	elseBB = Builder.GetInsertBlock();
+	
+	theFunc->getBasicBlockList().push_back(mergeBB);
+	Builder.SetInsertPoint(mergeBB);
+	PHINode *PN = Builder.CreatePHI(Type::getInt32Ty(getGlobalContext()), 2, "iftmp");
+	
+	PN->addIncoming(thenV, thenBB);
+	PN->addIncoming(elseV, elseBB);
+	
+	return PN;
+}
+
++(Value *) Expression_Codegen:(DSExpr *)expr {
+	if ([expr isKindOfClass:DSCall.class]) {
+		return [self Call_Codegen:(DSCall *)expr];
+	} else if ([expr isKindOfClass:DSAssignment.class]) {
+		return [self Assignment_Codegen:(DSAssignment *)expr];
+	} else if ([expr isKindOfClass:DSBinaryExpression.class]) {
+		DSBinaryExpression *temp = (DSBinaryExpression *)expr;
+		return [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
+	} else {
+		return 0;
+	}
+}
+
++(Value *) Assignment_Codegen:(DSAssignment *)expr {
 	if (![expr.storage isKindOfClass:DSIdentifierString.class]) {
 		[self ErrorV:"Cannot make assignment to this expression"];
 		exit(0);
@@ -146,7 +217,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		v = [self Call_Codegen:(DSCall *)expr.expression];
 	}
 	
-	Builder.CreateStore(v, var);
+	return Builder.CreateStore(v, var);
 }
 
 +(Value *) Call_Codegen:(DSCall *)expr {
@@ -292,6 +363,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 			[self Call_Codegen:(DSCall *)child];
 		} else if ([child isKindOfClass:DSAssignment.class]) {
 			[self Assignment_Codegen:(DSAssignment *)child];
+		} else if ([child isKindOfClass:DSIfStatement.class]) {
+			[self IfExpr_Codegen:(DSIfStatement *)child];
 		}
 	}
 	
@@ -333,6 +406,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 			[self Call_Codegen:(DSCall *)child];
 		} else if ([child isKindOfClass:DSAssignment.class]) {
 			[self Assignment_Codegen:(DSAssignment *)child];
+		} else if ([child isKindOfClass:DSIfStatement.class]) {
+			[self IfExpr_Codegen:(DSIfStatement *)child];
 		}
 	}
 	
