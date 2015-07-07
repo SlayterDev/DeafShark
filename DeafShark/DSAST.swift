@@ -257,7 +257,11 @@ public class DSIfStatement: DSConditionalStatement {
 	}
 }
 
-public class DSWhileStatement: DSConditionalStatement {}
+public class DSWhileStatement: DSConditionalStatement {
+	override public var description: String {
+		return "DeafSharkWhileStatement - condition:\(self.cond.description)"
+	}
+}
 
 public class DSReturnStatement: DSExpr {
 	let statement: DSExpr

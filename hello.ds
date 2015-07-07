@@ -1,9 +1,16 @@
 var a = 100
 
-if a < 100 {
-	print("A is less than 100")
+if a == 100 {
+	print("A is equal to 100")
 } else {
-	print("A is greater than or equal to 100")
+	print("A is not equal to 100")
+}
+
+var i = 0
+
+while i < 10 {
+	print("Hello, World")
+	i = i + 1
 }
 
 /* This is a block comment */

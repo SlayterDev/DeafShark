@@ -10,13 +10,7 @@
 #import "DeafShark-Swift.h"
 #import "LLVMHelper.h"
 #import "OutputUtils.h"
-
-#include "llvm/IR/IRBuilder.h"
-#include "llvm/IR/Module.h"
-#include "llvm/IR/LLVMContext.h"
-#include "llvm/IR/DerivedTypes.h"
-#include "llvm/Bitcode/ReaderWriter.h"
-#include "llvm/Support/raw_ostream.h"
+#import "LoopGeneration.h"
 
 @implementation Codegen
 
@@ -344,6 +338,34 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	return 0;
 }
 
++(Value *) WhileLoop_Codegen:(DSWhileStatement *)expr {
+	Function *theFunc = Builder.GetInsertBlock()->getParent();
+	//BasicBlock *preHeaderBB = Builder.GetInsertBlock();
+	BasicBlock *loopBB = BasicBlock::Create(getGlobalContext(), "loop", theFunc);
+	
+	Builder.CreateBr(loopBB);
+	Builder.SetInsertPoint(loopBB);
+	
+	//PHINode *Variable = Builder.CreatePHI(Type::getInt32Ty(getGlobalContext()), 2, )
+	
+	if ([Codegen Body_Codegen:expr.body andFunction:theFunc] == 0)
+		return 0;
+	
+	Value *cond = [Codegen Expression_Codegen:expr.cond];
+	if (cond == 0)
+		return 0;
+	
+	cond = Builder.CreateFCmpONE(cond, ConstantFP::get(getGlobalContext(), APFloat(0.0)), "loopcond");
+	
+	//BasicBlock *loopEndBB = Builder.GetInsertBlock();
+	BasicBlock *afterBB = BasicBlock::Create(getGlobalContext(), "afterLoop", theFunc);
+	
+	Builder.CreateCondBr(cond, loopBB, afterBB);
+	Builder.SetInsertPoint(afterBB);
+	
+	return Constant::getNullValue(Type::getDoubleTy(getGlobalContext()));
+}
+
 +(Value *) Body_Codegen:(DSBody *)body andFunction:(Function *)f {
 	Value *returnVal = 0;
 	
@@ -365,6 +387,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 			[self Assignment_Codegen:(DSAssignment *)child];
 		} else if ([child isKindOfClass:DSIfStatement.class]) {
 			[self IfExpr_Codegen:(DSIfStatement *)child];
+		} else if ([child isKindOfClass:DSWhileStatement.class]) {
+			[self WhileLoop_Codegen:(DSWhileStatement *)child];
 		}
 	}
 	
@@ -408,6 +432,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 			[self Assignment_Codegen:(DSAssignment *)child];
 		} else if ([child isKindOfClass:DSIfStatement.class]) {
 			[self IfExpr_Codegen:(DSIfStatement *)child];
+		} else if ([child isKindOfClass:DSWhileStatement.class]) {
+			[self WhileLoop_Codegen:(DSWhileStatement *)child];
 		}
 	}
 	
