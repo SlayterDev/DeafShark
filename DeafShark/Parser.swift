@@ -373,9 +373,18 @@ public class DSParser {
 	}
 	
 	func parseForStatement() -> DSForStatement? {
-		let initial = parseDeclarationStatement() as? DSDeclaration
-		
-		print(initial?.description)
+		let initial: DSAST
+		switch tokens[0] {
+		case .VariableDeclaration:
+			fallthrough
+		case .ConstantDeclaration:
+			fallthrough
+		case .Identifier(_):
+			initial = parseStatement()!
+		default:
+			errors.append(DSError(message: "invalid for loop initialization", lineContext: self.lineContext[0]))
+			return nil
+		}
 		
 		switch tokens[0] {
 		case .Semicolon:
@@ -403,7 +412,7 @@ public class DSParser {
 		}
 		
 		if let body = parseBody(true) {
-			return DSForStatement(initial: initial!, condition: condition!, increment: increment!, body: body, lineContext: self.lineContext[0])
+			return DSForStatement(initial: initial, condition: condition!, increment: increment!, body: body, lineContext: self.lineContext[0])
 		} else {
 			errors.append(DSError(message: "Missing expected 'for' body.", lineContext: self.lineContext[0]))
 			return nil

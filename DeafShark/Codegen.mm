@@ -244,6 +244,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		v = [self VariableExpr_Codegen:(DSIdentifierString *)expr.expression];
 	} else if ([expr.expression isKindOfClass:DSCall.class]) {
 		v = [self Call_Codegen:(DSCall *)expr.expression];
+	} else if ([expr.expression isKindOfClass:DSSignedIntegerLiteral.class]) {
+		v = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr.expression];
 	}
 	
 	return Builder.CreateStore(v, var);
@@ -402,24 +404,34 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	
 	Function *theFunc = Builder.GetInsertBlock()->getParent();
 	
-	AllocaInst *alloca = CreateEntryBlockAlloca(theFunc, expr.initial);
 	
-	Value *startVal = [self Expression_Codegen:expr.initial.assignment];
+	
+	Value *startVal;
+	AllocaInst *oldVal = nullptr;
+	if ([expr.initial isKindOfClass:DSDeclaration.class]) {
+		DSDeclaration *temp = (DSDeclaration *)(expr.initial);
+		
+		AllocaInst *alloca = CreateEntryBlockAlloca(theFunc, temp);
+		
+		startVal = [self Expression_Codegen:temp.assignment];
+		Builder.CreateStore(startVal, alloca);
+		
+		oldVal = namedValues[temp.identifier];
+		namedValues[temp.identifier] = alloca;
+	} else {
+		startVal = [self Expression_Codegen:(DSExpr *)(expr.initial)];
+	}
 	if (startVal == 0) {
 		NSLog(@"Bad start val");
 		return 0;
 	}
 	
-	Builder.CreateStore(startVal, alloca);
+	
 	
 	BasicBlock *loopBB = BasicBlock::Create(getGlobalContext(), "loop", theFunc);
 	
 	Builder.CreateBr(loopBB);
 	Builder.SetInsertPoint(loopBB);
-	
-	
-	AllocaInst *oldVal = namedValues[expr.initial.identifier];
-	namedValues[expr.initial.identifier] = alloca;
 	
 	if ([self Body_Codegen:expr.body andFunction:theFunc] == 0)
 		return 0;
@@ -449,10 +461,14 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	Builder.CreateCondBr(endCond, loopBB, afterBB);
 	Builder.SetInsertPoint(afterBB);
 	
-	if (oldVal)
-		namedValues[expr.initial.identifier] = oldVal;
-	else
-		namedValues.erase(expr.initial.identifier);
+	if ([expr.initial isKindOfClass:DSDeclaration.class]) {
+		DSDeclaration *temp = (DSDeclaration *)(expr.initial);
+		if (oldVal) {
+			namedValues[temp.identifier] = oldVal;
+		} else {
+			namedValues.erase(temp.identifier);
+		}
+	}
 	
 	return Constant::getNullValue(Type::getDoubleTy(getGlobalContext()));
 }

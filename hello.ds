@@ -5,7 +5,8 @@ var next = 0
 
 print("The first " + n + " fibonacci numbers are:")
 
-for var c = 0; c < n; c += 1; {
+var c = 0
+for c = 0; c < n; c += 1; {
 	if c <= 1 {
 		next = c
 	} else {
