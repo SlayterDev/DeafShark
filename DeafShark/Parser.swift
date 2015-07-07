@@ -343,7 +343,20 @@ public class DSParser {
 			case .While:
 				return DSWhileStatement(condition: cond, body: body, lineContext: context)
 			case .If:
-				return DSIfStatement(condition: cond, body: body, lineContext: context)
+				let ifstat = DSIfStatement(condition: cond, body: body, lineContext: context)
+				switch tokens[0] {
+				case .Else:
+					consumeToken()
+					if let elseBody = parseBody(true) {
+						ifstat.elseBody = elseBody
+					} else {
+						errors.append(DSError(message: "Missing expected 'else' body.", lineContext: self.lineContext[0]))
+						return nil
+					}
+				default:
+					break
+				}
+				return ifstat
 			default:
 				return nil
 			}

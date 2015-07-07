@@ -244,7 +244,18 @@ public class DSConditionalStatement: DSAST {
 	}
 }
 
-public class DSIfStatement: DSConditionalStatement {}
+public class DSIfStatement: DSConditionalStatement {
+	var elseBody: DSBody?
+	
+	override init(condition: DSExpr, body: DSBody, lineContext: LineContext?) {
+		self.elseBody = nil
+		super.init(condition: condition, body: body, lineContext: lineContext)
+	}
+	
+	override public var description: String {
+		return "DeafSharkIfStatement - condition:\(self.cond.description)" + (self.elseBody?.description)!
+	}
+}
 
 public class DSWhileStatement: DSConditionalStatement {}
 
