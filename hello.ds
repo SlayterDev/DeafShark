@@ -2,11 +2,11 @@ var n = 25
 var first = 0
 var second = 1
 var next = 0
-var c = 0
 
 print("The first " + n + " fibonacci numbers are:")
 
-while c < n {
+var c = 0
+for c = 0; c < n; c += 1; {
 	if c <= 1 {
 		next = c
 	} else {
@@ -15,7 +15,7 @@ while c < n {
 		second = next
 	}
 	print(next)
-	c = c + 1
+	//c += 1
 }
 
 /* This is a block comment */

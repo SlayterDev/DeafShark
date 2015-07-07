@@ -136,6 +136,22 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	} else if ([expr.op isEqual:@">="]) {
 		L = Builder.CreateICmpSGE(L, R);
 		return Builder.CreateUIToFP(L, Type::getDoubleTy(getGlobalContext()));
+	} else if ([expr.op isEqual:@"+="]) {
+		Value *result = Builder.CreateAdd(L, R);
+		Value *var = namedValues[((DSIdentifierString *)LHS).name];
+		return Builder.CreateStore(result, var);
+	} else if ([expr.op isEqual:@"-="]) {
+		Value *result = Builder.CreateSub(L, R);
+		Value *var = namedValues[((DSIdentifierString *)LHS).name];
+		return Builder.CreateStore(result, var);
+	} else if ([expr.op isEqual:@"/="]) {
+		Value *result = Builder.CreateMul(L, R);
+		Value *var = namedValues[((DSIdentifierString *)LHS).name];
+		return Builder.CreateStore(result, var);
+	} else if ([expr.op isEqual:@"*="]) {
+		Value *result = Builder.CreateSDiv(L, R);
+		Value *var = namedValues[((DSIdentifierString *)LHS).name];
+		return Builder.CreateStore(result, var);
 	}
 	
 	return [self ErrorV:"invalid binary operator"];
@@ -191,6 +207,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 }
 
 +(Value *) Expression_Codegen:(DSExpr *)expr {
+	NSLog(@"%@", expr);
+	
 	if ([expr isKindOfClass:DSCall.class]) {
 		return [self Call_Codegen:(DSCall *)expr];
 	} else if ([expr isKindOfClass:DSAssignment.class]) {
@@ -198,6 +216,9 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	} else if ([expr isKindOfClass:DSBinaryExpression.class]) {
 		DSBinaryExpression *temp = (DSBinaryExpression *)expr;
 		return [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
+	} else if ([expr isKindOfClass:DSSignedIntegerLiteral.class]) {
+		NSLog(@"Returning an int");
+		return [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr];
 	} else {
 		return 0;
 	}
@@ -223,6 +244,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		v = [self VariableExpr_Codegen:(DSIdentifierString *)expr.expression];
 	} else if ([expr.expression isKindOfClass:DSCall.class]) {
 		v = [self Call_Codegen:(DSCall *)expr.expression];
+	} else if ([expr.expression isKindOfClass:DSSignedIntegerLiteral.class]) {
+		v = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr.expression];
 	}
 	
 	return Builder.CreateStore(v, var);
@@ -354,13 +377,10 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 
 +(Value *) WhileLoop_Codegen:(DSWhileStatement *)expr {
 	Function *theFunc = Builder.GetInsertBlock()->getParent();
-	//BasicBlock *preHeaderBB = Builder.GetInsertBlock();
 	BasicBlock *loopBB = BasicBlock::Create(getGlobalContext(), "loop", theFunc);
 	
 	Builder.CreateBr(loopBB);
 	Builder.SetInsertPoint(loopBB);
-	
-	//PHINode *Variable = Builder.CreatePHI(Type::getInt32Ty(getGlobalContext()), 2, )
 	
 	if ([Codegen Body_Codegen:expr.body andFunction:theFunc] == 0)
 		return 0;
@@ -371,11 +391,84 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	
 	cond = Builder.CreateFCmpONE(cond, ConstantFP::get(getGlobalContext(), APFloat(0.0)), "loopcond");
 	
-	//BasicBlock *loopEndBB = Builder.GetInsertBlock();
 	BasicBlock *afterBB = BasicBlock::Create(getGlobalContext(), "afterLoop", theFunc);
 	
 	Builder.CreateCondBr(cond, loopBB, afterBB);
 	Builder.SetInsertPoint(afterBB);
+	
+	return Constant::getNullValue(Type::getDoubleTy(getGlobalContext()));
+}
+
++(Value *) ForLoop_Codegen:(DSForStatement *)expr {
+	NSLog(@"Make for loop");
+	
+	Function *theFunc = Builder.GetInsertBlock()->getParent();
+	
+	
+	
+	Value *startVal;
+	AllocaInst *oldVal = nullptr;
+	if ([expr.initial isKindOfClass:DSDeclaration.class]) {
+		DSDeclaration *temp = (DSDeclaration *)(expr.initial);
+		
+		AllocaInst *alloca = CreateEntryBlockAlloca(theFunc, temp);
+		
+		startVal = [self Expression_Codegen:temp.assignment];
+		Builder.CreateStore(startVal, alloca);
+		
+		oldVal = namedValues[temp.identifier];
+		namedValues[temp.identifier] = alloca;
+	} else {
+		startVal = [self Expression_Codegen:(DSExpr *)(expr.initial)];
+	}
+	if (startVal == 0) {
+		NSLog(@"Bad start val");
+		return 0;
+	}
+	
+	
+	
+	BasicBlock *loopBB = BasicBlock::Create(getGlobalContext(), "loop", theFunc);
+	
+	Builder.CreateBr(loopBB);
+	Builder.SetInsertPoint(loopBB);
+	
+	if ([self Body_Codegen:expr.body andFunction:theFunc] == 0)
+		return 0;
+	
+	Value *stepVal;
+	if (expr.increment) {
+		stepVal = [self Expression_Codegen:expr.increment];
+		if (stepVal == 0)
+			return 0;
+	} else {
+		stepVal = ConstantInt::get(getGlobalContext(), APInt(32, 1));
+	}
+	
+	Value *endCond = [self Expression_Codegen:expr.cond];
+	if (endCond == 0)
+		return 0;
+	
+	/*Value *curVar = Builder.CreateLoad(alloca, [expr.initial.identifier cStringUsingEncoding:NSUTF8StringEncoding]);
+	Value *nextVar = Builder.CreateAdd(curVar, stepVal, "nextVar");
+	Builder.CreateStore(nextVar, alloca);*/
+	//[self Expression_Codegen:expr.increment];
+	
+	endCond = Builder.CreateFCmpONE(endCond, ConstantFP::get(getGlobalContext(), APFloat(0.0)), "loopCond");
+	
+	BasicBlock *afterBB = BasicBlock::Create(getGlobalContext(), "afterloop", theFunc);
+	
+	Builder.CreateCondBr(endCond, loopBB, afterBB);
+	Builder.SetInsertPoint(afterBB);
+	
+	if ([expr.initial isKindOfClass:DSDeclaration.class]) {
+		DSDeclaration *temp = (DSDeclaration *)(expr.initial);
+		if (oldVal) {
+			namedValues[temp.identifier] = oldVal;
+		} else {
+			namedValues.erase(temp.identifier);
+		}
+	}
 	
 	return Constant::getNullValue(Type::getDoubleTy(getGlobalContext()));
 }
@@ -403,6 +496,13 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 			[self IfExpr_Codegen:(DSIfStatement *)child];
 		} else if ([child isKindOfClass:DSWhileStatement.class]) {
 			[self WhileLoop_Codegen:(DSWhileStatement *)child];
+		} else if ([child isKindOfClass:DSForStatement.class]) {
+			[self ForLoop_Codegen:(DSForStatement *)child];
+		} else if ([child isKindOfClass:DSBinaryExpression.class]) {
+			DSBinaryExpression *temp = (DSBinaryExpression *)child;
+			if ([[CompilerHelper sharedInstance] isValidBinaryAssignment:temp]) {
+				[self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
+			}
 		}
 	}
 	
@@ -448,12 +548,23 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 			[self IfExpr_Codegen:(DSIfStatement *)child];
 		} else if ([child isKindOfClass:DSWhileStatement.class]) {
 			[self WhileLoop_Codegen:(DSWhileStatement *)child];
+		} else if ([child isKindOfClass:DSForStatement.class]) {
+			[self ForLoop_Codegen:(DSForStatement *)child];
 		}
 	}
 	
 	Value *retVal = ConstantInt::get(getGlobalContext(), APInt(32, 0));
 	Builder.CreateRet(retVal);
 	
+	llvm::legacy::FunctionPassManager OurFPM(theModule);
+	OurFPM.add(createBasicAliasAnalysisPass());
+	OurFPM.doInitialization();
+	
+	Module::iterator it;
+	Module::iterator end = theModule->end();
+	for (it = theModule->begin(); it != end; it++) {
+		OurFPM.run(*it);
+	}
 	
 	theModule->dump();
 	
