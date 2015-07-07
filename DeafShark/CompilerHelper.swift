@@ -111,4 +111,19 @@ import Cocoa
 		return ((lhsFormat + rhsFormat), args)
 	}
 	
+	func isValidBinaryAssignment(expr: DSBinaryExpression) -> Bool {
+		switch expr.op {
+		case "+=":
+			fallthrough
+		case "-=":
+			fallthrough
+		case "/=":
+			fallthrough
+		case "*=":
+			return true
+		default:
+			return false
+		}
+	}
+	
 }

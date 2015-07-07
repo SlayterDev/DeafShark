@@ -15,7 +15,7 @@ while c < n {
 		second = next
 	}
 	print(next)
-	c = c + 1
+	c += 1
 }
 
 /* This is a block comment */

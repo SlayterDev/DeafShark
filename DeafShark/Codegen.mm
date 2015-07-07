@@ -136,6 +136,22 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	} else if ([expr.op isEqual:@">="]) {
 		L = Builder.CreateICmpSGE(L, R);
 		return Builder.CreateUIToFP(L, Type::getDoubleTy(getGlobalContext()));
+	} else if ([expr.op isEqual:@"+="]) {
+		Value *result = Builder.CreateAdd(L, R);
+		Value *var = namedValues[((DSIdentifierString *)LHS).name];
+		return Builder.CreateStore(result, var);
+	} else if ([expr.op isEqual:@"-="]) {
+		Value *result = Builder.CreateSub(L, R);
+		Value *var = namedValues[((DSIdentifierString *)LHS).name];
+		return Builder.CreateStore(result, var);
+	} else if ([expr.op isEqual:@"/="]) {
+		Value *result = Builder.CreateMul(L, R);
+		Value *var = namedValues[((DSIdentifierString *)LHS).name];
+		return Builder.CreateStore(result, var);
+	} else if ([expr.op isEqual:@"*="]) {
+		Value *result = Builder.CreateSDiv(L, R);
+		Value *var = namedValues[((DSIdentifierString *)LHS).name];
+		return Builder.CreateStore(result, var);
 	}
 	
 	return [self ErrorV:"invalid binary operator"];
@@ -403,6 +419,11 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 			[self IfExpr_Codegen:(DSIfStatement *)child];
 		} else if ([child isKindOfClass:DSWhileStatement.class]) {
 			[self WhileLoop_Codegen:(DSWhileStatement *)child];
+		} else if ([child isKindOfClass:DSBinaryExpression.class]) {
+			DSBinaryExpression *temp = (DSBinaryExpression *)child;
+			if ([[CompilerHelper sharedInstance] isValidBinaryAssignment:temp]) {
+				[self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
+			}
 		}
 	}
 	

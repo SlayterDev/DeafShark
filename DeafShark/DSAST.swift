@@ -268,7 +268,7 @@ public class DSIfStatement: DSConditionalStatement {
 
 public class DSWhileStatement: DSConditionalStatement {
 	override public var description: String {
-		return "DeafSharkWhileStatement - condition:\(self.cond.description)"
+		return "DeafSharkWhileStatement - condition:\(self.cond.description)" + self.body.description
 	}
 }
 
