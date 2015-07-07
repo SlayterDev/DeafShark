@@ -38,7 +38,7 @@ Thank you to the [Nifty](https://github.com/mitchellallison/nifty) project by Mi
 the lexer and parser for `DeafShark` since much of the syntax is similar to Swift.
 
 ### Try it out
-* Make sure you have [LLVM](llvm.org) installed because you'll need it. I won't go into how to install this because it seems different for everyone, however building it from source seems like a good way to go.
+* Make sure you have [LLVM](llvm.org) installed because you'll need it. [Here is a quick guide](https://github.com/SlayterDev/DeafShark/wiki/Install-LLVM) for installing LLVM on OS X.
 * Next clone the repository and open up the Xcode project. 
 * Create a file called `hello.ds` (or whatever you want so long as it ends with `.ds`). In that file put `print("Hello, World\n")`.
 * You'll need to add the location of your source file as a commandline argument to the Scheme (upper left where it says `DeafShark`). 
