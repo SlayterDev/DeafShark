@@ -10,7 +10,6 @@
 #import "DeafShark-Swift.h"
 #import "LLVMHelper.h"
 #import "OutputUtils.h"
-#import "LoopGeneration.h"
 
 @implementation Codegen
 

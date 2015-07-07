@@ -16,7 +16,6 @@
 		021862001B30636600D0ED84 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021861FF1B30636600D0ED84 /* Parser.swift */; };
 		027447AD1B4571EC009EA56A /* OutputUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = 027447AC1B4571EC009EA56A /* OutputUtils.mm */; };
 		027447B31B459D97009EA56A /* compileandlink.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 027447AE1B4598D5009EA56A /* compileandlink.sh */; };
-		02E79BDA1B4C1A1C002264F9 /* LoopGeneration.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02E79BD91B4C1A1C002264F9 /* LoopGeneration.mm */; };
 		02EC96B71B42DC9A00D3D7E1 /* CompilerHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02EC96B61B42DC9A00D3D7E1 /* CompilerHelper.swift */; };
 		02EC96BA1B42E5EE00D3D7E1 /* LLVMHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02EC96B91B42E5EE00D3D7E1 /* LLVMHelper.mm */; };
 		02EC96BC1B42E7F800D3D7E1 /* Codegen.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02EC96BB1B42E7F800D3D7E1 /* Codegen.mm */; };
@@ -49,9 +48,6 @@
 		027447AE1B4598D5009EA56A /* compileandlink.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = compileandlink.sh; path = /Users/Slayter/Xcode/Mac/DeafShark/DeafShark/compileandlink.sh; sourceTree = "<absolute>"; };
 		02B4A8D41B384C23006C3669 /* DeafShark-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DeafShark-Bridging-Header.h"; sourceTree = "<group>"; };
 		02B4A8D71B39A2CC006C3669 /* Codegen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Codegen.h; sourceTree = "<group>"; };
-		02E79BD81B4C1A1C002264F9 /* LoopGeneration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoopGeneration.h; sourceTree = "<group>"; };
-		02E79BD91B4C1A1C002264F9 /* LoopGeneration.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LoopGeneration.mm; sourceTree = "<group>"; };
-		02E79BDB1B4C1ED1002264F9 /* Codegen+NonSwift.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Codegen+NonSwift.h"; sourceTree = "<group>"; };
 		02EC96B61B42DC9A00D3D7E1 /* CompilerHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompilerHelper.swift; sourceTree = "<group>"; };
 		02EC96B81B42E5EE00D3D7E1 /* LLVMHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LLVMHelper.h; sourceTree = "<group>"; };
 		02EC96B91B42E5EE00D3D7E1 /* LLVMHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LLVMHelper.mm; sourceTree = "<group>"; };
@@ -102,15 +98,12 @@
 			children = (
 				027447AE1B4598D5009EA56A /* compileandlink.sh */,
 				02EC96B61B42DC9A00D3D7E1 /* CompilerHelper.swift */,
-				02E79BDB1B4C1ED1002264F9 /* Codegen+NonSwift.h */,
 				02B4A8D71B39A2CC006C3669 /* Codegen.h */,
 				02EC96BB1B42E7F800D3D7E1 /* Codegen.mm */,
 				02EC96B81B42E5EE00D3D7E1 /* LLVMHelper.h */,
 				02EC96B91B42E5EE00D3D7E1 /* LLVMHelper.mm */,
 				027447AB1B4571EC009EA56A /* OutputUtils.h */,
 				027447AC1B4571EC009EA56A /* OutputUtils.mm */,
-				02E79BD81B4C1A1C002264F9 /* LoopGeneration.h */,
-				02E79BD91B4C1A1C002264F9 /* LoopGeneration.mm */,
 			);
 			name = Compiler;
 			sourceTree = "<group>";
@@ -219,7 +212,6 @@
 				027447AD1B4571EC009EA56A /* OutputUtils.mm in Sources */,
 				021862001B30636600D0ED84 /* Parser.swift in Sources */,
 				02EC96BA1B42E5EE00D3D7E1 /* LLVMHelper.mm in Sources */,
-				02E79BDA1B4C1A1C002264F9 /* LoopGeneration.mm in Sources */,
 				02EC96B71B42DC9A00D3D7E1 /* CompilerHelper.swift in Sources */,
 				02EC96BC1B42E7F800D3D7E1 /* Codegen.mm in Sources */,
 			);
