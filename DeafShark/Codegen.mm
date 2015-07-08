@@ -370,7 +370,6 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	if (Value *RetValue = [self Body_Codegen:expr.body andFunction:theFunction]) {
 		Builder.CreateRet(RetValue);
 		
-		// TODO: Verify function
 		verifyFunction(*theFunction);
 		
 		return theFunction;
@@ -517,7 +516,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	return returnVal;
 }
 
-+(void) DSBody_Codegen:(DSBody *)body {
++(void) TopLevel_Codegen:(DSBody *)body {
 	LLVMContext &Context = getGlobalContext();
 	
 	theModule = new Module("myModule", Context);
@@ -531,7 +530,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		}
 	}
 	
-	// Create function
+	// Create main function
 	FunctionType *ft = FunctionType::get(Builder.getInt32Ty(), false);
 	
 	Function *f = Function::Create(ft, Function::ExternalLinkage, "main", theModule);
@@ -539,43 +538,14 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	BasicBlock *bb = BasicBlock::Create(getGlobalContext(), "entry", f);
 	Builder.SetInsertPoint(bb);
 	
-	for (DSAST *child in body.children) {
-		if ([child isKindOfClass:DSBinaryExpression.class]) {
-			DSBinaryExpression *temp = (DSBinaryExpression *)child;
-			[self BinaryExp_Codegen:temp.rhs andRHS:temp.lhs andExpr:temp];
-		} else if ([child isKindOfClass:DSDeclaration.class]) {
-			[self Declaration_Codegen:(DSDeclaration *)child function:f];
-		} else if ([child isKindOfClass:DSCall.class]) {
-			[self Call_Codegen:(DSCall *)child];
-		} else if ([child isKindOfClass:DSAssignment.class]) {
-			[self Assignment_Codegen:(DSAssignment *)child];
-		} else if ([child isKindOfClass:DSIfStatement.class]) {
-			[self IfExpr_Codegen:(DSIfStatement *)child];
-		} else if ([child isKindOfClass:DSWhileStatement.class]) {
-			[self WhileLoop_Codegen:(DSWhileStatement *)child];
-		} else if ([child isKindOfClass:DSForStatement.class]) {
-			[self ForLoop_Codegen:(DSForStatement *)child];
-		}
-	}
+	[self Body_Codegen:body andFunction:f];
 	
 	Value *retVal = ConstantInt::get(getGlobalContext(), APInt(32, 0));
 	Builder.CreateRet(retVal);
 	
 	verifyFunction(*f);
 	
-	llvm::legacy::FunctionPassManager OurFPM(theModule);
-	OurFPM.add(createBasicAliasAnalysisPass());
-	OurFPM.doInitialization();
-	
-	Module::iterator it;
-	Module::iterator end = theModule->end();
-	for (it = theModule->begin(); it != end; it++) {
-		OurFPM.run(*it);
-	}
-	
-	theModule->dump();
-	
-	[OutputUtils writeBitcode:theModule];
+	[OutputUtils doOptimization:theModule];
 }
 
 @end
