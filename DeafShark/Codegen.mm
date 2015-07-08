@@ -371,6 +371,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		Builder.CreateRet(RetValue);
 		
 		// TODO: Verify function
+		verifyFunction(*theFunction);
 		
 		return theFunction;
 	}
@@ -559,6 +560,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	
 	Value *retVal = ConstantInt::get(getGlobalContext(), APInt(32, 0));
 	Builder.CreateRet(retVal);
+	
+	verifyFunction(*f);
 	
 	llvm::legacy::FunctionPassManager OurFPM(theModule);
 	OurFPM.add(createBasicAliasAnalysisPass());

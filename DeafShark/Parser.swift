@@ -282,8 +282,8 @@ public class DSParser {
 				}
 			}
 			
-			if declaration.assignment != nil && declaration.type == nil {
-				errors.append(DSError(message: "If no initialization given, declaration must have a type", lineContext: self.lineContext[0]))
+			if declaration.assignment == nil && declaration.type == nil {
+				errors.append(DSError(message: "Error for \(declaration.identifier). If no initialization given, declaration must have a type", lineContext: self.lineContext[0]))
 				return nil
 			}
 			
