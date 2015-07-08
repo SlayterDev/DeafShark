@@ -49,7 +49,7 @@ import Cocoa
 // Program Body
 public class DSBody: DSAST {
 	func codeGen() {
-		Codegen.DSBody_Codegen(self)
+		Codegen.TopLevel_Codegen(self)
 	}
 }
 
