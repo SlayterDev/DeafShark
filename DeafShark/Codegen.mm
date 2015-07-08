@@ -77,7 +77,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		type.identifier = @"String";
 	} else if ([expr.assignment isKindOfClass:DSCall.class]) {
 		v = [self Call_Codegen:(DSCall *)expr.assignment];
-		// TODO: function type
+		DSCall *temp = (DSCall *)expr;
+		type.identifier = functionTypes[temp.identifier.name];
 	} else if ([expr.assignment isKindOfClass:DSSignedIntegerLiteral.class]) {
 		v = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr.assignment];
 		type.identifier = @"Int";
