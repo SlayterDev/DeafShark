@@ -515,7 +515,9 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 +(void) TopLevel_Codegen:(DSBody *)body {
 	LLVMContext &Context = getGlobalContext();
 	
-	theModule = new Module("myModule", Context);
+	NSString *moduleName = [[CompilerHelper sharedInstance] getModuleName];
+	
+	theModule = new Module([moduleName cStringUsingEncoding:NSUTF8StringEncoding], Context);
 	
 	namedValues.clear();
 	namedTypes.clear();
