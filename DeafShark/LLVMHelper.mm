@@ -7,6 +7,7 @@
 //
 
 #import "LLVMHelper.h"
+#import "Codegen_NonSwift.h"
 #import "DeafShark-Swift.h"
 
 using namespace llvm;
@@ -30,6 +31,8 @@ using namespace llvm;
 	} else if ([argument isKindOfClass:DSStringLiteral.class]) {
 		DSStringLiteral *stringLit = (DSStringLiteral *)argument;
 		return Builder.CreateGlobalStringPtr([stringLit.val cStringUsingEncoding:NSUTF8StringEncoding]);
+	} else if ([argument isKindOfClass:DSCall.class]) {
+		return [Codegen Call_Codegen:(DSCall *)argument];
 	}
 	
 	return nil;

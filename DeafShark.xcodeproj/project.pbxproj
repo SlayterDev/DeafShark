@@ -52,6 +52,7 @@
 		02EC96B81B42E5EE00D3D7E1 /* LLVMHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LLVMHelper.h; sourceTree = "<group>"; };
 		02EC96B91B42E5EE00D3D7E1 /* LLVMHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LLVMHelper.mm; sourceTree = "<group>"; };
 		02EC96BB1B42E7F800D3D7E1 /* Codegen.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Codegen.mm; sourceTree = "<group>"; };
+		02F8590C1B4D747B008D6D00 /* Codegen_NonSwift.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Codegen_NonSwift.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +105,7 @@
 				02EC96B91B42E5EE00D3D7E1 /* LLVMHelper.mm */,
 				027447AB1B4571EC009EA56A /* OutputUtils.h */,
 				027447AC1B4571EC009EA56A /* OutputUtils.mm */,
+				02F8590C1B4D747B008D6D00 /* Codegen_NonSwift.h */,
 			);
 			name = Compiler;
 			sourceTree = "<group>";

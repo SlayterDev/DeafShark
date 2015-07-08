@@ -19,6 +19,7 @@ static Module *theModule;
 static IRBuilder<> Builder(getGlobalContext());
 static std::map<NSString *, AllocaInst *> namedValues;
 static std::map<NSString *, NSString *>namedTypes;
+static std::map<NSString *, NSString *>functionTypes;
 
 static BOOL printMade = false;
 Constant *putsFunc;
@@ -41,6 +42,10 @@ Constant *putsFunc;
 
 +(NSString *) typeForIdentifier:(DSIdentifierString *)expr {
 	return namedTypes[expr.name];
+}
+
++(NSString *) typeForFunction:(DSCall *)expr {
+	return functionTypes[expr.identifier.name];
 }
 
 static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *var) {
@@ -334,6 +339,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		}
 	}
 	
+	functionTypes[expr.identifier] = expr.type.identifier;
 	
 	unsigned Idx = 0;
 	for (Function::arg_iterator AI = F->arg_begin(); Idx != expr.parameters.count; AI++, Idx++) {
@@ -486,6 +492,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 			} else if ([temp.statement isKindOfClass:DSIdentifierString.class]) {
 				returnVal = [self VariableExpr_Codegen:(DSIdentifierString *)temp.statement];
 			}
+			
+			//Builder.CreateRet(returnVal);
 		} else if ([child isKindOfClass:DSDeclaration.class]) {
 			[self Declaration_Codegen:(DSDeclaration *)child function:f];
 		} else if ([child isKindOfClass:DSCall.class]) {

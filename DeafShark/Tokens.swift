@@ -108,7 +108,7 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 				linepos += $0[0].characters.count
 			}?
 			// Match an Int literal
-			.match(/"^[0-9]+"/"i") {
+			.match(/"^(-)?[0-9]+"/"i") {
 				let num = strtol($0[0], nil, 10)
 				tokens.append(.IntegerLiteral(num))
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
