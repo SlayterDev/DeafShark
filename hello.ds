@@ -14,7 +14,4 @@ for var c = 0; c < n; c += 1; {
 		second = next
 	}
 	print(next + " ")
-	//c += 1
 }
-
-/* This is a block comment */
