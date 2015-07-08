@@ -12,6 +12,22 @@ using namespace llvm;
 
 @implementation OutputUtils
 
++(void) doOptimization:(Module *)theModule {
+	llvm::legacy::FunctionPassManager OurFPM(theModule);
+	OurFPM.add(createBasicAliasAnalysisPass());
+	OurFPM.doInitialization();
+	
+	Module::iterator it;
+	Module::iterator end = theModule->end();
+	for (it = theModule->begin(); it != end; it++) {
+		OurFPM.run(*it);
+	}
+	
+	theModule->dump();
+	
+	[self writeBitcode:theModule];
+}
+
 +(void) writeBitcode:(Module *)theModule {
 	std::error_code ec;
 	
@@ -54,26 +70,11 @@ using namespace llvm;
 	
 	NSTask *task = [[NSTask alloc] init];
 	
+	// TODO: Maybe make this configurable some day
 	task.launchPath = @"/usr/local/DeafShark/compileandlink.sh";
 	task.arguments = @[bitcodePath, asmPath, binaryPath];
 	
 	[task launch];
-	//[task waitUntilExit];
-	
-	/*NSError *error;
-	[[NSFileManager defaultManager] removeItemAtPath:bitcodePath error:&error];
-	
-	if (error) {
-		NSLog(@"%@", error.description);
-	}*/
-}
-
-+(void) makeBinary:(NSString *)asmPath {
-	NSString *binaryPath = [asmPath stringByDeletingPathExtension];
-	
-	NSTask *task = [[NSTask alloc] init];
-	task.launchPath = @"/usr/local/bin/llc";
-	task.arguments = @[asmPath, @"-o", binaryPath];
 }
 
 @end
