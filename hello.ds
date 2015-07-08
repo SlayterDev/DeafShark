@@ -13,5 +13,5 @@ for var c = 0; c < n; c += 1; {
 		first = second
 		second = next
 	}
-	print(next)
+	print(next + " ")
 }
