@@ -105,27 +105,13 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 +(Value *) BinaryExp_Codegen:(DSExpr *)LHS andRHS:(DSExpr *)RHS andExpr:(DSBinaryExpression *)expr {
 	Value *L = nullptr, *R = nullptr;
 	
-	if ([LHS isKindOfClass:DSSignedIntegerLiteral.class]) {
-		L = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)LHS];
-	} else if ([LHS isKindOfClass:DSBinaryExpression.class]) {
-		DSBinaryExpression *temp = (DSBinaryExpression *)LHS;
-		L = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
-	} else if ([LHS isKindOfClass:DSIdentifierString.class]) {
-		L = [self VariableExpr_Codegen:(DSIdentifierString *)LHS];
-	} else if ([LHS isKindOfClass:DSCall.class]) {
-		L = [self Call_Codegen:(DSCall *)LHS];
+	if ([LHS isKindOfClass:DSAssignment.class] || [RHS isKindOfClass:DSAssignment.class]) {
+		[self ErrorV:@"Can't use an assignment in a Binary expression"];
+		exit(1);
 	}
 	
-	if ([RHS isKindOfClass:DSSignedIntegerLiteral.class]) {
-		R = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)RHS];
-	} else if ([RHS isKindOfClass:DSBinaryExpression.class]) {
-		DSBinaryExpression *temp = (DSBinaryExpression *)RHS;
-		R = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
-	} else if ([RHS isKindOfClass:DSIdentifierString.class]) {
-		R = [self VariableExpr_Codegen:(DSIdentifierString *)RHS];
-	} else if ([RHS isKindOfClass:DSCall.class]) {
-		R = [self Call_Codegen:(DSCall *)RHS];
-	}
+	L = [self Expression_Codegen:LHS];
+	R = [self Expression_Codegen:RHS];
 	
 	if ([expr.op isEqual: @"+"]) {
 		return Builder.CreateAdd(L, R);
@@ -234,6 +220,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		return [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
 	} else if ([expr isKindOfClass:DSSignedIntegerLiteral.class]) {
 		return [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr];
+	} else if ([expr isKindOfClass:DSIdentifierString.class]) {
+		return [self VariableExpr_Codegen:(DSIdentifierString *)expr];
 	} else {
 		return 0;
 	}
