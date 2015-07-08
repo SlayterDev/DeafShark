@@ -256,7 +256,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 }
 
 +(Value *) Call_Codegen:(DSCall *)expr {
-	if ([expr.identifier.name isEqual:@"print"]) {
+	if ([expr.identifier.name isEqual:@"println"] || [expr.identifier.name isEqual:@"print"]) {
 		if (!printMade) {
 			std::vector<Type *> putsArgs;
 			putsArgs.push_back(Builder.getInt8Ty()->getPointerTo());
@@ -267,7 +267,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		}
 		
 		// MAKE THE CALL
-		NSString *format = [[CompilerHelper sharedInstance] getPrintFormatString:expr];
+		NSString *format = [[CompilerHelper sharedInstance] getPrintFormatString:expr newline:(([expr.identifier.name isEqual:@"println"]) ? YES : NO)];
 		NSArray *args = [[CompilerHelper sharedInstance] getMostRecentPrintArgs];
 		
 		Value *string = Builder.CreateGlobalStringPtr([format cStringUsingEncoding:NSASCIIStringEncoding]);

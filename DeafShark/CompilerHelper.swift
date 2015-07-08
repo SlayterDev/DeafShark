@@ -32,7 +32,7 @@ import Cocoa
 		}
 	}
 	
-	func getPrintFormatString(call: DSCall) -> NSString {
+	func getPrintFormatString(call: DSCall, newline: Bool) -> NSString {
 		let args = call.children
 		printCallArgs = [DSAST]()
 		
@@ -60,7 +60,9 @@ import Cocoa
 			}
 		}
 		
-		format += "\n"
+		if newline {
+			format += "\n"
+		}
 		
 		return format as NSString
 	}
