@@ -72,7 +72,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/Slayter/Xcode/Mac/DeafShark/hello.ds"
+            argument = "/Users/Slayter/Xcode/Mac/DeafShark/samples/math.ds"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

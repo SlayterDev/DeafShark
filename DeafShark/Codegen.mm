@@ -19,6 +19,7 @@ static Module *theModule;
 static IRBuilder<> Builder(getGlobalContext());
 static std::map<NSString *, AllocaInst *> namedValues;
 static std::map<NSString *, NSString *>namedTypes;
+static std::map<NSString *, NSString *>functionTypes;
 
 static BOOL printMade = false;
 Constant *putsFunc;
@@ -41,6 +42,10 @@ Constant *putsFunc;
 
 +(NSString *) typeForIdentifier:(DSIdentifierString *)expr {
 	return namedTypes[expr.name];
+}
+
++(NSString *) typeForFunction:(DSCall *)expr {
+	return functionTypes[expr.identifier.name];
 }
 
 static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *var) {
@@ -72,7 +77,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		type.identifier = @"String";
 	} else if ([expr.assignment isKindOfClass:DSCall.class]) {
 		v = [self Call_Codegen:(DSCall *)expr.assignment];
-		// TODO: function type
+		DSCall *temp = (DSCall *)expr;
+		type.identifier = functionTypes[temp.identifier.name];
 	} else if ([expr.assignment isKindOfClass:DSSignedIntegerLiteral.class]) {
 		v = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr.assignment];
 		type.identifier = @"Int";
@@ -100,23 +106,13 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 +(Value *) BinaryExp_Codegen:(DSExpr *)LHS andRHS:(DSExpr *)RHS andExpr:(DSBinaryExpression *)expr {
 	Value *L = nullptr, *R = nullptr;
 	
-	if ([LHS isKindOfClass:DSSignedIntegerLiteral.class]) {
-		L = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)LHS];
-	} else if ([LHS isKindOfClass:DSBinaryExpression.class]) {
-		DSBinaryExpression *temp = (DSBinaryExpression *)LHS;
-		L = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
-	} else if ([LHS isKindOfClass:DSIdentifierString.class]) {
-		L = [self VariableExpr_Codegen:(DSIdentifierString *)LHS];
+	if ([LHS isKindOfClass:DSAssignment.class] || [RHS isKindOfClass:DSAssignment.class]) {
+		[self ErrorV:@"Can't use an assignment in a Binary expression"];
+		exit(1);
 	}
 	
-	if ([RHS isKindOfClass:DSSignedIntegerLiteral.class]) {
-		R = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)RHS];
-	} else if ([RHS isKindOfClass:DSBinaryExpression.class]) {
-		DSBinaryExpression *temp = (DSBinaryExpression *)RHS;
-		R = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
-	} else if ([RHS isKindOfClass:DSIdentifierString.class]) {
-		R = [self VariableExpr_Codegen:(DSIdentifierString *)RHS];
-	}
+	L = [self Expression_Codegen:LHS];
+	R = [self Expression_Codegen:RHS];
 	
 	if ([expr.op isEqual: @"+"]) {
 		return Builder.CreateAdd(L, R);
@@ -126,6 +122,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		return Builder.CreateMul(L, R);
 	} else if ([expr.op isEqual: @"/"]) {
 		return Builder.CreateSDiv(L, R);
+	} else if ([expr.op isEqual: @"%"]) {
+		return Builder.CreateSRem(L, R);
 	} else if ([expr.op isEqual: @"<"]) {
 		L = Builder.CreateICmpSLT(L, R);
 		return Builder.CreateUIToFP(L, Type::getDoubleTy(getGlobalContext()));
@@ -196,6 +194,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		 elseV = [self Body_Codegen:expr.elseBody andFunction:theFunc];
 		if (elseV == 0)
 			return 0;
+	} else {
+		elseV = ConstantInt::get(getGlobalContext(), APInt(32, 0));
 	}
 	
 	Builder.CreateBr(mergeBB);
@@ -221,6 +221,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		return [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
 	} else if ([expr isKindOfClass:DSSignedIntegerLiteral.class]) {
 		return [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr];
+	} else if ([expr isKindOfClass:DSIdentifierString.class]) {
+		return [self VariableExpr_Codegen:(DSIdentifierString *)expr];
 	} else {
 		return 0;
 	}
@@ -334,6 +336,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		}
 	}
 	
+	functionTypes[expr.identifier] = expr.type.identifier;
 	
 	unsigned Idx = 0;
 	for (Function::arg_iterator AI = F->arg_begin(); Idx != expr.parameters.count; AI++, Idx++) {
@@ -491,6 +494,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 			} else if ([temp.statement isKindOfClass:DSIdentifierString.class]) {
 				returnVal = [self VariableExpr_Codegen:(DSIdentifierString *)temp.statement];
 			}
+			
+			//Builder.CreateRet(returnVal);
 		} else if ([child isKindOfClass:DSDeclaration.class]) {
 			[self Declaration_Codegen:(DSDeclaration *)child function:f];
 		} else if ([child isKindOfClass:DSCall.class]) {

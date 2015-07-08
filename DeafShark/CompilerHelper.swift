@@ -55,6 +55,10 @@ import Cocoa
 				let type = Codegen.typeForIdentifier(expr)
 				format += formatForType(type)
 				printCallArgs.append(expr)
+			case let expr as DSCall:
+				let type = Codegen.typeForFunction(expr)
+				format += formatForType(type)
+				printCallArgs.append(expr)
 			default:
 				break
 			}
@@ -84,8 +88,13 @@ import Cocoa
 			lhsFormat += binExpFormat
 			args += binExpArgs
 		case let expr as DSIdentifierString:
-			lhsFormat += "%d"
+			let type = Codegen.typeForIdentifier(expr)
+			lhsFormat += formatForType(type)
 			args.append(expr)
+		case let expr as DSCall:
+			let type = Codegen.typeForFunction(expr)
+			lhsFormat += formatForType(type)
+			printCallArgs.append(expr)
 		default:
 			lhsFormat += ""
 		}
@@ -104,8 +113,13 @@ import Cocoa
 			rhsFormat += binExpFormat
 			args += binExpArgs
 		case let expr as DSIdentifierString:
-			rhsFormat += "%d"
+			let type = Codegen.typeForIdentifier(expr)
+			rhsFormat += formatForType(type)
 			args.append(expr)
+		case let expr as DSCall:
+			let type = Codegen.typeForFunction(expr)
+			rhsFormat += formatForType(type)
+			printCallArgs.append(expr)
 		default:
 			rhsFormat += ""
 		}

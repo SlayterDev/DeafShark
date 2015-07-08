@@ -262,7 +262,7 @@ public class DSIfStatement: DSConditionalStatement {
 	}
 	
 	override public var description: String {
-		return "DeafSharkIfStatement - condition:\(self.cond.description)" + (self.elseBody?.description)!
+		return "DeafSharkIfStatement - condition:\(self.cond.description)"
 	}
 }
 
