@@ -236,7 +236,7 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 				linepos += $0[0].characters.count
 			}?
 			// infix operators
-			.match(/"^[\\+\\-/*<>=](=)?") {
+			.match(/"^[\\+\\-/*<>=%](=)?") {
 				tokens.append(.InfixOperator($0[0]))
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count

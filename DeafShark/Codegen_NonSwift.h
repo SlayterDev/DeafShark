@@ -20,10 +20,13 @@
 #include <Foundation/Foundation.h>
 
 @class DSCall;
+@class DSExpr;
+@class DSBinaryExpression;
 
 @interface Codegen : NSObject
 
 +(llvm::Value *) Call_Codegen:(DSCall *)expr;
++(llvm::Value *) BinaryExp_Codegen:(DSExpr *)LHS andRHS:(DSExpr *)RHS andExpr:(DSBinaryExpression *)expr;
 
 @end
 

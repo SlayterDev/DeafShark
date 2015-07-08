@@ -112,6 +112,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		L = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
 	} else if ([LHS isKindOfClass:DSIdentifierString.class]) {
 		L = [self VariableExpr_Codegen:(DSIdentifierString *)LHS];
+	} else if ([LHS isKindOfClass:DSCall.class]) {
+		L = [self Call_Codegen:(DSCall *)LHS];
 	}
 	
 	if ([RHS isKindOfClass:DSSignedIntegerLiteral.class]) {
@@ -121,6 +123,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		R = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
 	} else if ([RHS isKindOfClass:DSIdentifierString.class]) {
 		R = [self VariableExpr_Codegen:(DSIdentifierString *)RHS];
+	} else if ([RHS isKindOfClass:DSCall.class]) {
+		R = [self Call_Codegen:(DSCall *)RHS];
 	}
 	
 	if ([expr.op isEqual: @"+"]) {
@@ -131,6 +135,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		return Builder.CreateMul(L, R);
 	} else if ([expr.op isEqual: @"/"]) {
 		return Builder.CreateSDiv(L, R);
+	} else if ([expr.op isEqual: @"%"]) {
+		return Builder.CreateSRem(L, R);
 	} else if ([expr.op isEqual: @"<"]) {
 		L = Builder.CreateICmpSLT(L, R);
 		return Builder.CreateUIToFP(L, Type::getDoubleTy(getGlobalContext()));
@@ -201,6 +207,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		 elseV = [self Body_Codegen:expr.elseBody andFunction:theFunc];
 		if (elseV == 0)
 			return 0;
+	} else {
+		elseV = ConstantInt::get(getGlobalContext(), APInt(32, 0));
 	}
 	
 	Builder.CreateBr(mergeBB);

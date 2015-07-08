@@ -33,6 +33,9 @@ using namespace llvm;
 		return Builder.CreateGlobalStringPtr([stringLit.val cStringUsingEncoding:NSUTF8StringEncoding]);
 	} else if ([argument isKindOfClass:DSCall.class]) {
 		return [Codegen Call_Codegen:(DSCall *)argument];
+	} else if ([argument isKindOfClass:DSBinaryExpression.class]) {
+		DSBinaryExpression *temp = (DSBinaryExpression *)argument;
+		return [Codegen BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
 	}
 	
 	return nil;
