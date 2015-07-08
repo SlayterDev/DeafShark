@@ -24,13 +24,13 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		021861E91B2F544E00D0ED84 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 12;
+			buildActionMask = 8;
 			dstPath = usr/local/DeafShark;
 			dstSubfolderSpec = 0;
 			files = (
 				027447B31B459D97009EA56A /* compileandlink.sh in CopyFiles */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
+			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
