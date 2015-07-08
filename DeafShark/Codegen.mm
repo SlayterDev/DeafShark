@@ -385,12 +385,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 +(Value *) WhileLoop_Codegen:(DSWhileStatement *)expr {
 	Function *theFunc = Builder.GetInsertBlock()->getParent();
 	BasicBlock *loopBB = BasicBlock::Create(getGlobalContext(), "loop", theFunc);
-	
-	Builder.CreateBr(loopBB);
-	Builder.SetInsertPoint(loopBB);
-	
-	if ([Codegen Body_Codegen:expr.body andFunction:theFunc] == 0)
-		return 0;
+	BasicBlock *afterBB = BasicBlock::Create(getGlobalContext(), "afterLoop", theFunc);
 	
 	Value *cond = [Codegen Expression_Codegen:expr.cond];
 	if (cond == 0)
@@ -398,7 +393,15 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	
 	cond = Builder.CreateFCmpONE(cond, ConstantFP::get(getGlobalContext(), APFloat(0.0)), "loopcond");
 	
-	BasicBlock *afterBB = BasicBlock::Create(getGlobalContext(), "afterLoop", theFunc);
+	Builder.CreateCondBr(cond, loopBB, afterBB);
+	Builder.SetInsertPoint(loopBB);
+	
+	if ([Codegen Body_Codegen:expr.body andFunction:theFunc] == 0)
+		return 0;
+	
+	cond = [Codegen Expression_Codegen:expr.cond];
+	
+	cond = Builder.CreateFCmpONE(cond, ConstantFP::get(getGlobalContext(), APFloat(0.0)), "loopcond");
 	
 	Builder.CreateCondBr(cond, loopBB, afterBB);
 	Builder.SetInsertPoint(afterBB);
@@ -429,11 +432,17 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		return 0;
 	}
 	
+	Value *endCond = [self Expression_Codegen:expr.cond];
+	if (endCond == 0)
+		return 0;
 	
+	endCond = Builder.CreateFCmpONE(endCond, ConstantFP::get(getGlobalContext(), APFloat(0.0)), "loopCond");
 	
 	BasicBlock *loopBB = BasicBlock::Create(getGlobalContext(), "loop", theFunc);
+	BasicBlock *afterBB = BasicBlock::Create(getGlobalContext(), "afterloop", theFunc);
 	
-	Builder.CreateBr(loopBB);
+	Builder.CreateCondBr(endCond, loopBB, afterBB);
+	
 	Builder.SetInsertPoint(loopBB);
 	
 	if ([self Body_Codegen:expr.body andFunction:theFunc] == 0)
@@ -448,9 +457,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		stepVal = ConstantInt::get(getGlobalContext(), APInt(32, 1));
 	}
 	
-	Value *endCond = [self Expression_Codegen:expr.cond];
-	if (endCond == 0)
-		return 0;
+	endCond = [self Expression_Codegen:expr.cond];
 	
 	/*Value *curVar = Builder.CreateLoad(alloca, [expr.initial.identifier cStringUsingEncoding:NSUTF8StringEncoding]);
 	Value *nextVar = Builder.CreateAdd(curVar, stepVal, "nextVar");
@@ -458,8 +465,6 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	//[self Expression_Codegen:expr.increment];
 	
 	endCond = Builder.CreateFCmpONE(endCond, ConstantFP::get(getGlobalContext(), APFloat(0.0)), "loopCond");
-	
-	BasicBlock *afterBB = BasicBlock::Create(getGlobalContext(), "afterloop", theFunc);
 	
 	Builder.CreateCondBr(endCond, loopBB, afterBB);
 	Builder.SetInsertPoint(afterBB);

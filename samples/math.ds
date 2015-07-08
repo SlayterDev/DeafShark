@@ -1,0 +1,37 @@
+func abs(n as Int) -> Int {
+	var retVal as Int
+
+	if n < 0 {
+		retVal = n * -1
+	} else {
+		retVal = n
+	}
+
+	return retVal
+}
+
+func square(n as Int) -> Int {
+	return n * n
+}
+
+func pow(n as Int, k as Int) -> Int {
+	var retVal as Int
+
+	if k == 0 {
+		retVal = 1
+	} else {
+		if k % 2 == 0 {
+			retVal = pow(n*n, k/2)
+		} else {
+			retVal = pow(n*n, k/2) * n
+		}
+	}
+
+	if k == 1 {
+		retVal = n
+	}
+
+	return retVal
+}
+
+println("The result of 5^2: " + pow(5, 3))
