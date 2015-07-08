@@ -23,14 +23,14 @@ static std::map<NSString *, NSString *>namedTypes;
 static BOOL printMade = false;
 Constant *putsFunc;
 
-+(Value *) ErrorV:(const char *)str {
-	NSLog(@"%s", str);
++(Value *) ErrorV:(NSString *)str {
+	NSLog(@"%@", str);
 	return 0;
 }
 
 +(Value *) VariableExpr_Codegen:(DSIdentifierString *)expr {
 	Value *V = namedValues[expr.name];
-	if (V == 0) return [Codegen ErrorV:"unknown variable name"];
+	if (V == 0) return [Codegen ErrorV:[NSString stringWithFormat:@"Unknown variable name: %@", expr.name]];
 	
 	return Builder.CreateLoad(V, [expr.name cStringUsingEncoding:NSUTF8StringEncoding]);
 }
@@ -47,6 +47,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	NSString *varName = var.identifier;
 	
 	IRBuilder<> TmpB(&theFunction->getEntryBlock(), theFunction->getEntryBlock().begin());
+	
+	// TODO: Better type allocations
 	
 	if ([var.type.identifier isEqual:@"Int"])
 		return TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0, [varName cStringUsingEncoding:NSASCIIStringEncoding]);
@@ -77,7 +79,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	} else if (expr.assignment == nil) {
 		assert(expr.type != nil);
 	} else {
-		[self ErrorV:"Unsupported declaration"];
+		[self ErrorV:[NSString stringWithFormat:@"Unsupported declaration: %@", expr.description]];
 		exit(1);
 	}
 	
@@ -106,7 +108,6 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	} else if ([LHS isKindOfClass:DSIdentifierString.class]) {
 		L = [self VariableExpr_Codegen:(DSIdentifierString *)LHS];
 	}
-	
 	
 	if ([RHS isKindOfClass:DSSignedIntegerLiteral.class]) {
 		R = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)RHS];
@@ -158,7 +159,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		return Builder.CreateStore(result, var);
 	}
 	
-	return [self ErrorV:"invalid binary operator"];
+	return [self ErrorV:[NSString stringWithFormat:@"invalid binary operator: %@", expr.op]];
 }
 
 +(Value *) IfExpr_Codegen:(DSIfStatement *)expr {
@@ -211,8 +212,6 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 }
 
 +(Value *) Expression_Codegen:(DSExpr *)expr {
-	NSLog(@"%@", expr);
-	
 	if ([expr isKindOfClass:DSCall.class]) {
 		return [self Call_Codegen:(DSCall *)expr];
 	} else if ([expr isKindOfClass:DSAssignment.class]) {
@@ -221,7 +220,6 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		DSBinaryExpression *temp = (DSBinaryExpression *)expr;
 		return [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
 	} else if ([expr isKindOfClass:DSSignedIntegerLiteral.class]) {
-		NSLog(@"Returning an int");
 		return [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr];
 	} else {
 		return 0;
@@ -230,14 +228,17 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 
 +(Value *) Assignment_Codegen:(DSAssignment *)expr {
 	if (![expr.storage isKindOfClass:DSIdentifierString.class]) {
-		[self ErrorV:"Cannot make assignment to this expression"];
+		[self ErrorV:@"Cannot make assignment to this expression"];
 		exit(0);
 	}
 	
 	DSIdentifierString *store = (DSIdentifierString *)expr.storage;
 	
 	Value *var = namedValues[store.name];
-	if (var == 0) [self ErrorV:"Unknown variable name"];
+	if (var == 0) {
+		[self ErrorV:[NSString stringWithFormat:@"Unknown variable name: %@", store.name]];
+		exit(1);
+	}
 	
 	Value *v = 0;
 	
@@ -290,19 +291,20 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		Function *calleef = theModule->getFunction([expr.identifier.name cStringUsingEncoding:NSUTF8StringEncoding]);
 		
 		if (calleef == 0) {
-			[self ErrorV:"Unknown function"];
+			[self ErrorV:[NSString stringWithFormat:@"Unknown function: %@", expr.identifier.name]];
 			exit(1);
 		}
 		
 		if (calleef->arg_size() != expr.children.count) {
-			[self ErrorV:"Invalid num of arguments"];
+			[self ErrorV:[NSString stringWithFormat:@"Invalid num of arguments to function: %@", expr.identifier.name]];
+			exit(1);
 		}
 		
 		std::vector<Value *> ArgsV;
 		for (unsigned i = 0, e = (unsigned)expr.children.count; i != e; i++) {
 			ArgsV.push_back([LLVMHelper valueForArgument:expr.children[i] symbolTable:namedValues andBuilder:Builder]);
 			if (ArgsV.back() == 0) {
-				[self ErrorV:"Argument came back nil"];
+				[self ErrorV:@"Argument came back nil"];
 				exit(1);
 			}
 		}
@@ -312,8 +314,6 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 }
 
 +(Function *) Prototype_Codegen:(DSFunctionPrototype *)expr {
-	//std::vector<Type *> Ints(expr.parameters.count, Type::getInt32Ty(getGlobalContext()));
-	
 	std::vector<Type *> argsVec;
 	
 	for (DSDeclaration *argument in expr.parameters) {
@@ -329,7 +329,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		F = theModule->getFunction([expr.identifier cStringUsingEncoding:NSUTF8StringEncoding]);
 		
 		if (!F->empty()) {
-			[self ErrorV:"Redefinition of function"];
+			[self ErrorV:[NSString stringWithFormat:@"Redefinition of function: %@", expr.identifier]];
 			exit(1);
 		}
 	}
@@ -404,11 +404,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 }
 
 +(Value *) ForLoop_Codegen:(DSForStatement *)expr {
-	NSLog(@"Make for loop");
-	
 	Function *theFunc = Builder.GetInsertBlock()->getParent();
-	
-	
 	
 	Value *startVal;
 	AllocaInst *oldVal = nullptr;
@@ -426,7 +422,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		startVal = [self Expression_Codegen:(DSExpr *)(expr.initial)];
 	}
 	if (startVal == 0) {
-		NSLog(@"Bad start val");
+		[self ErrorV:@"An error occured in the start of a for loop"];
 		return 0;
 	}
 	
