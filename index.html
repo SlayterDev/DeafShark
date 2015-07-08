@@ -82,17 +82,19 @@ the lexer and parser for <code>DeafShark</code> since much of the syntax is simi
 <h3>
 <a id="try-it-out" class="anchor" href="#try-it-out" aria-hidden="true"><span class="octicon octicon-link"></span></a>Try it out</h3>
 
+<p>Checkout the Develop branch for the bleeding edge changes.</p>
+
 <ul>
-<li>Make sure you have <a href="llvm.org">LLVM</a> installed because you'll need it. I won't go into how to install this because it seems different for everyone, however building it from source seems like a good way to go.</li>
+<li>Make sure you have <a href="llvm.org">LLVM</a> installed because you'll need it. <a href="https://github.com/SlayterDev/DeafShark/wiki/Install-LLVM">Here is a quick guide</a> for installing LLVM on OS X.</li>
 <li>Next clone the repository and open up the Xcode project. </li>
-<li>Create a file called <code>hello.ds</code> (or whatever you want so long as it ends with <code>.ds</code>). In that file put <code>print("Hello, World\n")</code>.</li>
+<li>Create a file called <code>hello.ds</code> (or whatever you want so long as it ends with <code>.ds</code>). In that file put <code>print("Hello, World")</code>.</li>
 <li>You'll need to add the location of your source file as a commandline argument to the Scheme (upper left where it says <code>DeafShark</code>). </li>
 <li>Optionally you can add the <code>-o</code> argument and another argument that is the location to store the output file (use the full path, otherwise it dumps the file with the debug executable).</li>
 <li>When you run the compiler, it will dump out the AST of the source as well as the LLVM IR code. This is mainly for debug purposes and will likely be removed in the future</li>
-<li>When the program finishes, you should have a file called <code>myFile.bc</code> or whatever you called it. This is LLVM bitcode which can then be run via <code>lli myFile.bc</code> in the Terminal</li>
+<li>When the program finishes, you should have a binary file by the same name as your input file. If this didn't work, there is a chance your llvm executables are in a different place. Edit line 9 of the file <code>/usr/local/DeafShark/compileandlink.sh</code> to point to the location of <code>llc</code> on your machine. If this still doens't work, then it is most likely because your using parts of the language that have not been developed yet.</li>
 </ul>
 
-<p>Congratulations! You just wrote and ran your first <code>DeafShark</code> program! Probably pretty underwhelming at this point in the development. In the future, the bitcode will be compiled into an executable that can be run directly without the need of <code>lli</code>. I also plan to have executable versions of the <code>DeafShark</code> compiler that can be run from the command line.</p>
+<p>Congratulations! You just wrote and ran your first <code>DeafShark</code> program! Probably pretty underwhelming at this point in the development. In the future, I plan to have executable versions of the <code>DeafShark</code> compiler that can be run from the command line.</p>
       </section>
       <footer>
         <p>This project is maintained by <a href="https://github.com/SlayterDev">SlayterDev</a></p>
