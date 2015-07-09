@@ -440,6 +440,8 @@ public class DSParser {
 		case .StringLiteral(let string):
 			consumeToken()
 			return DSStringLiteral(val: string, lineContext: context)
+		case .ArrayLeft:
+			return parseArray()
 		default:
 			errors.append(DSError(message: "\(tokens[0]) is not a DeafShark expression.", lineContext: context))
 			return nil
@@ -585,5 +587,30 @@ public class DSParser {
 		default:
 			return identifier
 		}
+	}
+	
+	func parseArray() -> DSArrayLiteral? {
+		consumeToken()
+		
+		var elements = [DSExpr]()
+		while tokens.count > 0 {
+			switch tokens[0] {
+			case .Comma:
+				consumeToken()
+			case .ArrayRight:
+				consumeToken()
+				return DSArrayLiteral(elements: elements, lineContext: self.lineContext[0])
+			default:
+				if let expr = parseExpression() {
+					elements.append(expr)
+				} else {
+					errors.append(DSError(message: "Not a valid array expression", lineContext: self.lineContext[0]))
+					return nil
+				}
+			}
+		}
+		
+		errors.append(DSError(message: "Missing end of array", lineContext: self.lineContext[0]))
+		return nil
 	}
 }

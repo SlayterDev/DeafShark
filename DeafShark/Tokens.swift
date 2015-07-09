@@ -13,7 +13,7 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 	
 	case Function
 	
-	case LeftBracket, LeftBrace, RightBracket, RightBrace
+	case LeftBracket, LeftBrace, RightBracket, RightBrace, ArrayLeft, ArrayRight
 	case Arrow, Semicolon, Comma
 	
 	case While, For, If, Return, Else
@@ -82,6 +82,10 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			return "return"
 		case .For:
 			return "for"
+		case .ArrayLeft:
+			return "["
+		case .ArrayRight:
+			return "]"
 		}
 	}
 	
@@ -256,24 +260,33 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
-			
 			// left brace `{`
 			.match(/"^\\{") {
 				tokens.append(.LeftBrace)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
-			
 			// right bracket `)`
 			.match(/"^\\)") {
 				tokens.append(.RightBracket)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
-			
 			// right brace `}`
 			.match(/"^\\}") {
 				tokens.append(.RightBrace)
+				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
+				linepos += $0[0].characters.count
+			}?
+			// right brace `}`
+			.match(/"^\\[") {
+				tokens.append(.ArrayLeft)
+				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
+				linepos += $0[0].characters.count
+			}?
+			// right brace `}`
+			.match(/"^\\]") {
+				tokens.append(.ArrayRight)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?

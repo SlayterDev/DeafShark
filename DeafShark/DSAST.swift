@@ -352,3 +352,14 @@ public class DSBooleanLiteral: DSExpr {
 		return "DeafSharkBooleanLiteral - val:\(val)"
 	}
 }
+
+public class DSArrayLiteral: DSExpr {
+	init(elements: [DSExpr], lineContext: LineContext?) {
+		super.init(lineContext: lineContext)
+		self.children = elements
+	}
+	
+	override public var description: String {
+		return "DeafSharkArrayLiteral" + self.childDescriptions
+	}
+}
