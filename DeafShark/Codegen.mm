@@ -249,6 +249,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	
 	Value *v = 0;
 	
+	// TODO: type checking!!
 	if ([expr.expression isKindOfClass:DSBinaryExpression.class]) {
 		DSBinaryExpression *temp = (DSBinaryExpression *)expr.expression;
 		v = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
@@ -258,6 +259,9 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		v = [self Call_Codegen:(DSCall *)expr.expression];
 	} else if ([expr.expression isKindOfClass:DSSignedIntegerLiteral.class]) {
 		v = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr.expression];
+	} else if ([expr.expression isKindOfClass:DSStringLiteral.class]) {
+		DSStringLiteral *temp = (DSStringLiteral *)expr.expression;
+		v = Builder.CreateGlobalStringPtr([temp.val cStringUsingEncoding:NSUTF8StringEncoding]);
 	}
 	
 	return Builder.CreateStore(v, var);
