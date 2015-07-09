@@ -40,6 +40,17 @@ Constant *putsFunc;
 	return ConstantInt::get(getGlobalContext(), APInt(32, (int)expr.val));
 }
 
++(Value *) Array_Codegen:(DSArrayLiteral *)expr withName:(NSString *)name {
+	Type *memberType = Type::getInt32Ty(getGlobalContext());
+	
+	std::vector<Constant *> elems;
+	for (DSSignedIntegerLiteral *chid in expr.children) {
+		elems.push_back(ConstantInt::get(getGlobalContext(), APInt(32, (int)chid.val)));
+	}
+	
+	return ConstantArray::get(ArrayType::get(memberType, expr.children.count), ArrayRef<Constant *>(elems));
+}
+
 +(NSString *) typeForIdentifier:(DSIdentifierString *)expr {
 	return namedTypes[expr.name];
 }
@@ -48,7 +59,7 @@ Constant *putsFunc;
 	return functionTypes[expr.identifier.name];
 }
 
-static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *var) {
+static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *var, int count) {
 	NSString *varName = var.identifier;
 	
 	IRBuilder<> TmpB(&theFunction->getEntryBlock(), theFunction->getEntryBlock().begin());
@@ -59,6 +70,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		return TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0, [varName cStringUsingEncoding:NSASCIIStringEncoding]);
 	else if ([var.type.identifier isEqual:@"String"])
 		return TmpB.CreateAlloca(Type::getInt8PtrTy(getGlobalContext()), 0, [varName cStringUsingEncoding:NSUTF8StringEncoding]);
+	else if ([var.type.identifier isEqual:@"Array"])
+		return TmpB.CreateAlloca(ArrayType::get(Type::getInt32Ty(getGlobalContext()), count), 0, [varName cStringUsingEncoding:NSUTF8StringEncoding]);
 	
 	// Int by default
 	return TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0, [varName cStringUsingEncoding:NSASCIIStringEncoding]);
@@ -68,6 +81,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	Value *v = 0;
 	
 	DSType *type = [[DSType alloc] init];
+	int count = 0;
 	if ([expr.assignment isKindOfClass:DSBinaryExpression.class]) {
 		DSBinaryExpression *temp = (DSBinaryExpression *)expr.assignment;
 		v = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
@@ -87,6 +101,10 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		DSStringLiteral *temp = (DSStringLiteral *)expr.assignment;
 		v = Builder.CreateGlobalStringPtr([temp.val cStringUsingEncoding:NSUTF8StringEncoding]);
 		type.identifier = @"String";
+	} else if ([expr.assignment isKindOfClass:DSArrayLiteral.class]) {
+		v = [self Array_Codegen:(DSArrayLiteral *)expr.assignment withName:expr.identifier];
+		type.identifier = @"Array";
+		count = expr.assignment.children.count;
 	} else if (expr.assignment == nil) {
 		assert(expr.type != nil); // If no assignment, variable must have a type
 	} else {
@@ -97,7 +115,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	if (expr.type == nil)
 		expr.type = type;
 	
-	AllocaInst *alloca = CreateEntryBlockAlloca(func, expr);
+	AllocaInst *alloca = CreateEntryBlockAlloca(func, expr, count);
 	
 	namedValues[expr.identifier] = alloca;
 	namedTypes[expr.identifier] = expr.type.identifier;
@@ -358,7 +376,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 +(void) CreateArgumentAlloca:(Function *)F withPrototype:(DSFunctionPrototype *)expr {
 	Function::arg_iterator AI = F->arg_begin();
 	for (unsigned Idx = 0, e = (unsigned)expr.parameters.count; Idx != e; Idx++, AI++) {
-		AllocaInst *alloca = CreateEntryBlockAlloca(F, expr.parameters[Idx]);
+		AllocaInst *alloca = CreateEntryBlockAlloca(F, expr.parameters[Idx], 0);
 		
 		Builder.CreateStore(AI, alloca);
 		
@@ -426,7 +444,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	if ([expr.initial isKindOfClass:DSDeclaration.class]) {
 		DSDeclaration *temp = (DSDeclaration *)(expr.initial);
 		
-		AllocaInst *alloca = CreateEntryBlockAlloca(theFunc, temp);
+		AllocaInst *alloca = CreateEntryBlockAlloca(theFunc, temp, 0);
 		
 		startVal = [self Expression_Codegen:temp.assignment];
 		Builder.CreateStore(startVal, alloca);
