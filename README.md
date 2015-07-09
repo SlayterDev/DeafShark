@@ -1,5 +1,5 @@
 # DeafShark
-The DeafShark Programming Language implemented in Swift and LLVM
+The DeafShark Programming Language implemented in Swift, Objective-C++, and LLVM
 
 ### How Do I Try It?
 You can't do much yet...but if you really want to, [jump to the bottom](https://github.com/SlayterDev/DeafShark#try-it-out).
