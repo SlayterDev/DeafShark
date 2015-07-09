@@ -73,8 +73,9 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		v = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
 		// TODO: Type promotions
 	} else if ([expr.assignment isKindOfClass:DSIdentifierString.class]) {
-		v = [self VariableExpr_Codegen:(DSIdentifierString *)expr.assignment];
-		type.identifier = @"String";
+		DSIdentifierString *temp = (DSIdentifierString *)expr.assignment;
+		v = [self VariableExpr_Codegen:temp];
+		type.identifier = namedTypes[temp.name];
 	} else if ([expr.assignment isKindOfClass:DSCall.class]) {
 		v = [self Call_Codegen:(DSCall *)expr.assignment];
 		DSCall *temp = (DSCall *)expr;
@@ -82,8 +83,12 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	} else if ([expr.assignment isKindOfClass:DSSignedIntegerLiteral.class]) {
 		v = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr.assignment];
 		type.identifier = @"Int";
+	} else if ([expr.assignment isKindOfClass:DSStringLiteral.class]) {
+		DSStringLiteral *temp = (DSStringLiteral *)expr.assignment;
+		v = Builder.CreateGlobalStringPtr([temp.val cStringUsingEncoding:NSUTF8StringEncoding]);
+		type.identifier = @"String";
 	} else if (expr.assignment == nil) {
-		assert(expr.type != nil);
+		assert(expr.type != nil); // If no assignment, variable must have a type
 	} else {
 		[self ErrorV:[NSString stringWithFormat:@"Unsupported declaration: %@", expr.description]];
 		exit(1);
