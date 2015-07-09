@@ -57,7 +57,6 @@ Constant *putsFunc;
 			NSString *maxLength = @"";
 			if (stringLit.val.length > maxLength.length) { // Grab the type of the largest string
 				memberType = elem->getType();
-				memberType->dump();
 			}
 			
 			elems.push_back(elem);
@@ -65,6 +64,16 @@ Constant *putsFunc;
 	}
 	
 	return ConstantArray::get(ArrayType::get(memberType, expr.children.count), ArrayRef<Constant *>(elems));
+}
+
++(Value *) ArrayAccess_Codegen:(DSIdentifierString *)expr {
+	Value *array = namedValues[expr.name];
+	Value *index = [self Expression_Codegen:expr.arrayAccess];
+	
+	Value *idxList[2] = {ConstantInt::get(index->getType(), 0), index};
+	
+	Value *ptr = Builder.CreateGEP(array, idxList);
+	return Builder.CreateLoad(ptr, "arrayIdx");
 }
 
 +(NSString *) typeForIdentifier:(DSIdentifierString *)expr {
@@ -107,8 +116,12 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		// TODO: Type promotions
 	} else if ([expr.assignment isKindOfClass:DSIdentifierString.class]) {
 		DSIdentifierString *temp = (DSIdentifierString *)expr.assignment;
-		v = [self VariableExpr_Codegen:temp];
+		v = [self Expression_Codegen:expr.assignment];
 		type.identifier = namedTypes[temp.name];
+
+		if (temp.arrayAccess != nil) {
+			type.identifier = [type.identifier stringByReplacingOccurrencesOfString:@"Array," withString:@""];
+		}
 	} else if ([expr.assignment isKindOfClass:DSCall.class]) {
 		v = [self Call_Codegen:(DSCall *)expr.assignment];
 		DSCall *temp = (DSCall *)expr;
@@ -265,8 +278,14 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	} else if ([expr isKindOfClass:DSSignedIntegerLiteral.class]) {
 		return [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr];
 	} else if ([expr isKindOfClass:DSIdentifierString.class]) {
-		return [self VariableExpr_Codegen:(DSIdentifierString *)expr];
+		DSIdentifierString *temp = (DSIdentifierString *)expr;
+		if (temp.arrayAccess == nil) {
+			return [self VariableExpr_Codegen:(DSIdentifierString *)expr];
+		} else {
+			return [self ArrayAccess_Codegen:(DSIdentifierString *)expr];
+		}
 	} else {
+		NSLog(@"Returning zero");
 		return 0;
 	}
 }
@@ -292,7 +311,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		DSBinaryExpression *temp = (DSBinaryExpression *)expr.expression;
 		v = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
 	} else if ([expr.expression isKindOfClass:DSIdentifierString.class]) {
-		v = [self VariableExpr_Codegen:(DSIdentifierString *)expr.expression];
+		v = [self Expression_Codegen:expr.expression];
 	} else if ([expr.expression isKindOfClass:DSCall.class]) {
 		v = [self Call_Codegen:(DSCall *)expr.expression];
 	} else if ([expr.expression isKindOfClass:DSSignedIntegerLiteral.class]) {
@@ -327,7 +346,13 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		
 		for (DSAST *arg in args) {
 			if ([arg isKindOfClass:DSIdentifierString.class]) {
-				Value *v = [self VariableExpr_Codegen:(DSIdentifierString *)arg];
+				DSIdentifierString *temp = (DSIdentifierString *)arg;
+				
+				Value *v;
+				if (temp.arrayAccess == nil)
+					v = [self VariableExpr_Codegen:temp];
+				else
+					v = [self ArrayAccess_Codegen:temp];
 				printArguments.push_back(v);
 				continue;
 			}

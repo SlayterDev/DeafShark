@@ -294,6 +294,7 @@ public class DSReturnStatement: DSExpr {
 
 public class DSIdentifierString: DSExpr {
 	var name: String
+	var arrayAccess: DSExpr?
 	
 	init(name: String, lineContext: LineContext) {
 		self.name = name
@@ -301,7 +302,7 @@ public class DSIdentifierString: DSExpr {
 	}
 	
 	override public var description: String {
-		return "DeafSharkIdentifier - name:\(name)"
+		return "DeafSharkIdentifier - name:\(name)" + ((self.arrayAccess == nil) ? "" : self.arrayAccess!.description)
 	}
 }
 

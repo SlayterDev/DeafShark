@@ -553,6 +553,23 @@ public class DSParser {
 		case .Identifier(let id):
 			consumeToken()
 			identifier =  DSIdentifierString(name: id, lineContext: context)
+			switch tokens[0] {
+			case .ArrayLeft:
+				consumeToken()
+				if let expr = parseExpression() {
+					identifier.arrayAccess = expr
+				}
+				// May not be needed
+				switch tokens[0] {
+				case .ArrayRight:
+					consumeToken()
+				default:
+					errors.append(DSError(message: "Expected ']'", lineContext: self.lineContext[0]))
+					return nil
+				}
+			default:
+				break
+			}
 		default:
 			errors.append(DSError(message: "Missing expected identifier", lineContext: context))
 			return nil
