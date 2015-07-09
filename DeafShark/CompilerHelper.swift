@@ -147,4 +147,17 @@ import Cocoa
 		return nsInputFile.lastPathComponent.stringByDeletingPathExtension
 	}
 	
+	func getArrayTypeString(expr: DSArrayLiteral) -> String? {
+		switch expr.children[0] {
+		case _ as DSBinaryExpression:
+			fallthrough
+		case _ as DSSignedIntegerLiteral:
+			return "Array,Int"
+		case _ as DSStringLiteral:
+			return "Array,String"
+		default:
+			return nil
+		}
+	}
+	
 }

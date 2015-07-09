@@ -40,12 +40,28 @@ Constant *putsFunc;
 	return ConstantInt::get(getGlobalContext(), APInt(32, (int)expr.val));
 }
 
-+(Value *) Array_Codegen:(DSArrayLiteral *)expr withName:(NSString *)name {
-	Type *memberType = Type::getInt32Ty(getGlobalContext());
++(Value *) Array_Codegen:(DSArrayLiteral *)expr withType:(NSString *)type {
+	Type *memberType = [LLVMHelper llvmTypeForArrayType:type];
 	
 	std::vector<Constant *> elems;
-	for (DSSignedIntegerLiteral *chid in expr.children) {
-		elems.push_back(ConstantInt::get(getGlobalContext(), APInt(32, (int)chid.val)));
+	for (DSExpr *child in expr.children) {
+		if ([type hasSuffix:@"Int"]) {
+			DSSignedIntegerLiteral *intLit = (DSSignedIntegerLiteral *)child;
+			Constant *elem = ConstantInt::get(getGlobalContext(), APInt(32, (int)intLit.val));
+			elems.push_back(elem);
+			memberType = elem->getType();
+		} else {
+			DSStringLiteral *stringLit = (DSStringLiteral *)child;
+			Constant *elem = ConstantDataArray::getString(getGlobalContext(), [stringLit.val cStringUsingEncoding:NSUTF8StringEncoding]);
+			
+			NSString *maxLength = @"";
+			if (stringLit.val.length > maxLength.length) { // Grab the type of the largest string
+				memberType = elem->getType();
+				memberType->dump();
+			}
+			
+			elems.push_back(elem);
+		}
 	}
 	
 	return ConstantArray::get(ArrayType::get(memberType, expr.children.count), ArrayRef<Constant *>(elems));
@@ -59,7 +75,7 @@ Constant *putsFunc;
 	return functionTypes[expr.identifier.name];
 }
 
-static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *var, int count) {
+static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *var, int count, Type *arrType) {
 	NSString *varName = var.identifier;
 	
 	IRBuilder<> TmpB(&theFunction->getEntryBlock(), theFunction->getEntryBlock().begin());
@@ -70,8 +86,10 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		return TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0, [varName cStringUsingEncoding:NSASCIIStringEncoding]);
 	else if ([var.type.identifier isEqual:@"String"])
 		return TmpB.CreateAlloca(Type::getInt8PtrTy(getGlobalContext()), 0, [varName cStringUsingEncoding:NSUTF8StringEncoding]);
-	else if ([var.type.identifier isEqual:@"Array"])
-		return TmpB.CreateAlloca(ArrayType::get(Type::getInt32Ty(getGlobalContext()), count), 0, [varName cStringUsingEncoding:NSUTF8StringEncoding]);
+	else if ([var.type.identifier hasPrefix:@"Array"]) {
+		//Type *elemType = [LLVMHelper llvmTypeForArrayType:var.type.identifier];
+		return TmpB.CreateAlloca(arrType, 0, [varName cStringUsingEncoding:NSUTF8StringEncoding]);
+	}
 	
 	// Int by default
 	return TmpB.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0, [varName cStringUsingEncoding:NSASCIIStringEncoding]);
@@ -82,6 +100,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	
 	DSType *type = [[DSType alloc] init];
 	int count = 0;
+	Type *arrType = nullptr;
 	if ([expr.assignment isKindOfClass:DSBinaryExpression.class]) {
 		DSBinaryExpression *temp = (DSBinaryExpression *)expr.assignment;
 		v = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
@@ -102,9 +121,10 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		v = Builder.CreateGlobalStringPtr([temp.val cStringUsingEncoding:NSUTF8StringEncoding]);
 		type.identifier = @"String";
 	} else if ([expr.assignment isKindOfClass:DSArrayLiteral.class]) {
-		v = [self Array_Codegen:(DSArrayLiteral *)expr.assignment withName:expr.identifier];
-		type.identifier = @"Array";
+		type.identifier = [[CompilerHelper sharedInstance] getArrayTypeString:(DSArrayLiteral *)expr.assignment];
+		v = [self Array_Codegen:(DSArrayLiteral *)expr.assignment withType:type.identifier];
 		count = expr.assignment.children.count;
+		arrType = v->getType();
 	} else if (expr.assignment == nil) {
 		assert(expr.type != nil); // If no assignment, variable must have a type
 	} else {
@@ -115,7 +135,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	if (expr.type == nil)
 		expr.type = type;
 	
-	AllocaInst *alloca = CreateEntryBlockAlloca(func, expr, count);
+	AllocaInst *alloca = CreateEntryBlockAlloca(func, expr, count, arrType);
 	
 	namedValues[expr.identifier] = alloca;
 	namedTypes[expr.identifier] = expr.type.identifier;
@@ -376,7 +396,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 +(void) CreateArgumentAlloca:(Function *)F withPrototype:(DSFunctionPrototype *)expr {
 	Function::arg_iterator AI = F->arg_begin();
 	for (unsigned Idx = 0, e = (unsigned)expr.parameters.count; Idx != e; Idx++, AI++) {
-		AllocaInst *alloca = CreateEntryBlockAlloca(F, expr.parameters[Idx], 0);
+		AllocaInst *alloca = CreateEntryBlockAlloca(F, expr.parameters[Idx], 0, 0);
 		
 		Builder.CreateStore(AI, alloca);
 		
@@ -444,7 +464,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	if ([expr.initial isKindOfClass:DSDeclaration.class]) {
 		DSDeclaration *temp = (DSDeclaration *)(expr.initial);
 		
-		AllocaInst *alloca = CreateEntryBlockAlloca(theFunc, temp, 0);
+		AllocaInst *alloca = CreateEntryBlockAlloca(theFunc, temp, 0, 0);
 		
 		startVal = [self Expression_Codegen:temp.assignment];
 		Builder.CreateStore(startVal, alloca);

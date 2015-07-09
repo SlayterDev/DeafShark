@@ -52,4 +52,14 @@ using namespace llvm;
 	return Builder.getInt32Ty();
 }
 
++(Type *) llvmTypeForArrayType:(NSString *)arrayType {
+	if ([arrayType hasSuffix:@"Int"]) {
+		return Type::getInt32Ty(getGlobalContext());
+	} else if ([arrayType hasSuffix:@"String"]) {
+		return Type::getInt8PtrTy(getGlobalContext())->getPointerTo();
+	}
+	
+	return nil;
+}
+
 @end
