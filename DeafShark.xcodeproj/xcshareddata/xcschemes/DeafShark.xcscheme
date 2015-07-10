@@ -75,6 +75,10 @@
             argument = "/Users/Slayter/Xcode/Mac/DeafShark/hello.ds"
             isEnabled = "YES">
          </CommandLineArgument>
+         <CommandLineArgument
+            argument = "--verbose"
+            isEnabled = "YES">
+         </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>
       </AdditionalOptions>

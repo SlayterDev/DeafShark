@@ -287,6 +287,10 @@ public class DSForStatement: DSConditionalStatement {
 		self.increment = increment
 		super.init(condition: condition, body: body, lineContext: lineContext)
 	}
+	
+	override public var description: String {
+		return "DeafSharkForStatement - condition:\(self.cond.description)" + self.body.description
+	}
 }
 
 public class DSReturnStatement: DSExpr {
@@ -308,7 +312,7 @@ public class DSIdentifierString: DSExpr {
 	}
 	
 	override public var description: String {
-		return "DeafSharkIdentifier - name:\(name)" + ((self.arrayAccess == nil) ? "" : self.arrayAccess!.description)
+		return "DeafSharkIdentifier - name:\(name) " + ((self.arrayAccess == nil) ? "" : "[" + self.arrayAccess!.description + "]")
 	}
 }
 
