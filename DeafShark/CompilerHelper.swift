@@ -27,6 +27,8 @@ import Cocoa
 			return "%d"
 		case "String":
 			return "%s"
+		case "Array,String":
+			return "%s"
 		default:
 			return "%d"
 		}

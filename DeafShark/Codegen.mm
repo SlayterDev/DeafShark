@@ -73,6 +73,12 @@ Constant *putsFunc;
 	Value *idxList[2] = {ConstantInt::get(index->getType(), 0), index};
 	
 	Value *ptr = Builder.CreateGEP(array, idxList);
+	
+	NSString *type = namedTypes[expr.name];
+	
+	if ([type hasSuffix:@"String"])
+		return ptr;
+	
 	return Builder.CreateLoad(ptr, "arrayIdx");
 }
 

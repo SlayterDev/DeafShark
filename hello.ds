@@ -8,3 +8,6 @@ for var i = 0; i < 5; i += 1; {
 for var i = 0; i < 5; i += 1; {
 	println(array[i])
 }
+
+var names = ["Brad", "Kara"]
+println(names[1])
