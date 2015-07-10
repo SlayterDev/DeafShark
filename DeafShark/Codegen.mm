@@ -76,6 +76,15 @@ Constant *putsFunc;
 	return Builder.CreateLoad(ptr, "arrayIdx");
 }
 
++(Value *) ArrayStore_Codegen:(DSIdentifierString *)expr {
+	Value *array = namedValues[expr.name];
+	Value *index = [self Expression_Codegen:expr.arrayAccess];
+	
+	Value *idxList[2] = {ConstantInt::get(index->getType(), 0), index};
+	
+	return Builder.CreateGEP(array, idxList);
+}
+
 +(NSString *) typeForIdentifier:(DSIdentifierString *)expr {
 	return namedTypes[expr.name];
 }
@@ -305,6 +314,10 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	if (var == 0) {
 		[self ErrorV:[NSString stringWithFormat:@"Unknown variable name: %@", store.name]];
 		exit(1);
+	}
+	
+	if (store.arrayAccess != nil) {
+		var = [self ArrayStore_Codegen:store];
 	}
 	
 	// TODO: type checking!!
