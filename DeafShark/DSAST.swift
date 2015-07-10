@@ -61,21 +61,27 @@ public class DSExpr: DSAST {
 	}
 }
 
-public class DSType: DSAST {
+@objc public class DSType: DSAST {
 	var identifier: String
+	var itemCount: Int?
 	
 	override init() {
 		self.identifier = ""
 		super.init()
 	}
 	
-	init(identifier: String, lineContext: LineContext?) {
+	init(identifier: String, itemCount: Int?, lineContext: LineContext?) {
 		self.identifier = identifier
+		self.itemCount = itemCount
 		super.init(lineContext: lineContext)
 	}
 	
 	override public var description: String {
 		return "DeafSharkType - type:\(identifier)"
+	}
+	
+	func getItemCount() -> Int {
+		return itemCount!
 	}
 }
 
@@ -162,7 +168,7 @@ public class DSFunctionType: DSType {
 	init(parameterType: DSType, returnType: DSType, lineContext: LineContext? = nil) {
 		self.parameterType = parameterType
 		self.returnType = returnType
-		super.init(identifier: "func", lineContext: lineContext)
+		super.init(identifier: "func", itemCount: nil, lineContext: lineContext)
 	}
 	
 	override public var description: String {

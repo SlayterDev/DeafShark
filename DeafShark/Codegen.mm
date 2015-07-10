@@ -149,6 +149,10 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		arrType = v->getType();
 	} else if (expr.assignment == nil) {
 		assert(expr.type != nil); // If no assignment, variable must have a type
+		
+		if ([expr.type.identifier hasPrefix:@"Array"]) {
+			arrType = ArrayType::get([LLVMHelper llvmTypeForArrayType:expr.type.identifier], [expr.type getItemCount]);
+		}
 	} else {
 		[self ErrorV:[NSString stringWithFormat:@"Unsupported declaration: %@", expr.description]];
 		exit(1);
