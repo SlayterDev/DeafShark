@@ -277,6 +277,9 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		return [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
 	} else if ([expr isKindOfClass:DSSignedIntegerLiteral.class]) {
 		return [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr];
+	} else if ([expr isKindOfClass:DSStringLiteral.class]) {
+		DSStringLiteral *temp = (DSStringLiteral *)expr;
+		return Builder.CreateGlobalStringPtr([temp.val cStringUsingEncoding:NSUTF8StringEncoding]);
 	} else if ([expr isKindOfClass:DSIdentifierString.class]) {
 		DSIdentifierString *temp = (DSIdentifierString *)expr;
 		if (temp.arrayAccess == nil) {
@@ -304,21 +307,12 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		exit(1);
 	}
 	
-	Value *v = 0;
-	
 	// TODO: type checking!!
-	if ([expr.expression isKindOfClass:DSBinaryExpression.class]) {
-		DSBinaryExpression *temp = (DSBinaryExpression *)expr.expression;
-		v = [self BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
-	} else if ([expr.expression isKindOfClass:DSIdentifierString.class]) {
-		v = [self Expression_Codegen:expr.expression];
-	} else if ([expr.expression isKindOfClass:DSCall.class]) {
-		v = [self Call_Codegen:(DSCall *)expr.expression];
-	} else if ([expr.expression isKindOfClass:DSSignedIntegerLiteral.class]) {
-		v = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr.expression];
-	} else if ([expr.expression isKindOfClass:DSStringLiteral.class]) {
-		DSStringLiteral *temp = (DSStringLiteral *)expr.expression;
-		v = Builder.CreateGlobalStringPtr([temp.val cStringUsingEncoding:NSUTF8StringEncoding]);
+	Value *v = [self Expression_Codegen:expr.expression];
+	
+	if (v == 0) {
+		[self ErrorV:@"Could not generate expression"];
+		exit(1);
 	}
 	
 	return Builder.CreateStore(v, var);
