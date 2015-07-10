@@ -52,6 +52,7 @@
 		02EC96B81B42E5EE00D3D7E1 /* LLVMHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LLVMHelper.h; sourceTree = "<group>"; };
 		02EC96B91B42E5EE00D3D7E1 /* LLVMHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LLVMHelper.mm; sourceTree = "<group>"; };
 		02EC96BB1B42E7F800D3D7E1 /* Codegen.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Codegen.mm; sourceTree = "<group>"; };
+		02F8590C1B4D747B008D6D00 /* Codegen_NonSwift.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Codegen_NonSwift.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +105,7 @@
 				02EC96B91B42E5EE00D3D7E1 /* LLVMHelper.mm */,
 				027447AB1B4571EC009EA56A /* OutputUtils.h */,
 				027447AC1B4571EC009EA56A /* OutputUtils.mm */,
+				02F8590C1B4D747B008D6D00 /* Codegen_NonSwift.h */,
 			);
 			name = Compiler;
 			sourceTree = "<group>";
@@ -248,6 +250,9 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
+					__STDC_FORMAT_MACROS,
+					__STDC_CONSTANT_MACROS,
+					__STDC_LIMIT_MACROS,
 				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -310,6 +315,7 @@
 					__STDC_FORMAT_MACROS,
 					__STDC_LIMIT_MACROS,
 				);
+				"GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS[arch=*]" = "";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local/lib,
@@ -347,6 +353,11 @@
 			buildSettings = {
 				DEFINES_MODULE = YES;
 				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					__STDC_CONSTANT_MACROS,
+					__STDC_FORMAT_MACROS,
+					__STDC_LIMIT_MACROS,
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local/lib,

@@ -7,6 +7,7 @@
 //
 
 #import "LLVMHelper.h"
+#import "Codegen_NonSwift.h"
 #import "DeafShark-Swift.h"
 
 using namespace llvm;
@@ -30,6 +31,11 @@ using namespace llvm;
 	} else if ([argument isKindOfClass:DSStringLiteral.class]) {
 		DSStringLiteral *stringLit = (DSStringLiteral *)argument;
 		return Builder.CreateGlobalStringPtr([stringLit.val cStringUsingEncoding:NSUTF8StringEncoding]);
+	} else if ([argument isKindOfClass:DSCall.class]) {
+		return [Codegen Call_Codegen:(DSCall *)argument];
+	} else if ([argument isKindOfClass:DSBinaryExpression.class]) {
+		DSBinaryExpression *temp = (DSBinaryExpression *)argument;
+		return [Codegen BinaryExp_Codegen:temp.lhs andRHS:temp.rhs andExpr:temp];
 	}
 	
 	return nil;
@@ -44,6 +50,16 @@ using namespace llvm;
 	}
 	
 	return Builder.getInt32Ty();
+}
+
++(Type *) llvmTypeForArrayType:(NSString *)arrayType {
+	if ([arrayType hasSuffix:@"Int"]) {
+		return Type::getInt32Ty(getGlobalContext());
+	} else if ([arrayType hasSuffix:@"String"]) {
+		return Type::getInt8PtrTy(getGlobalContext())->getPointerTo();
+	}
+	
+	return nil;
 }
 
 @end

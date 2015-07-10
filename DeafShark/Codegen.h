@@ -11,11 +11,13 @@
 
 @class DSBody;
 @class DSExpr;
+@class DSCall;
 @class DSIdentifierString;
 
 @interface Codegen : NSObject
 
 +(void) TopLevel_Codegen:(DSBody *)body;
 +(NSString *) typeForIdentifier:(DSIdentifierString *)expr;
++(NSString *) typeForFunction:(DSCall *)expr;
 
 @end

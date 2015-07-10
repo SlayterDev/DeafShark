@@ -27,6 +27,8 @@ import Cocoa
 			return "%d"
 		case "String":
 			return "%s"
+		case "Array,String":
+			return "%s"
 		default:
 			return "%d"
 		}
@@ -53,6 +55,10 @@ import Cocoa
 				printCallArgs += binExpArgs
 			case let expr as DSIdentifierString:
 				let type = Codegen.typeForIdentifier(expr)
+				format += formatForType(type)
+				printCallArgs.append(expr)
+			case let expr as DSCall:
+				let type = Codegen.typeForFunction(expr)
 				format += formatForType(type)
 				printCallArgs.append(expr)
 			default:
@@ -84,8 +90,13 @@ import Cocoa
 			lhsFormat += binExpFormat
 			args += binExpArgs
 		case let expr as DSIdentifierString:
-			lhsFormat += "%d"
+			let type = Codegen.typeForIdentifier(expr)
+			lhsFormat += formatForType(type)
 			args.append(expr)
+		case let expr as DSCall:
+			let type = Codegen.typeForFunction(expr)
+			lhsFormat += formatForType(type)
+			printCallArgs.append(expr)
 		default:
 			lhsFormat += ""
 		}
@@ -104,8 +115,13 @@ import Cocoa
 			rhsFormat += binExpFormat
 			args += binExpArgs
 		case let expr as DSIdentifierString:
-			rhsFormat += "%d"
+			let type = Codegen.typeForIdentifier(expr)
+			rhsFormat += formatForType(type)
 			args.append(expr)
+		case let expr as DSCall:
+			let type = Codegen.typeForFunction(expr)
+			rhsFormat += formatForType(type)
+			printCallArgs.append(expr)
 		default:
 			rhsFormat += ""
 		}
@@ -131,6 +147,19 @@ import Cocoa
 	func getModuleName() -> String {
 		let nsInputFile = inputFile as NSString
 		return nsInputFile.lastPathComponent.stringByDeletingPathExtension
+	}
+	
+	func getArrayTypeString(expr: DSArrayLiteral) -> String? {
+		switch expr.children[0] {
+		case _ as DSBinaryExpression:
+			fallthrough
+		case _ as DSSignedIntegerLiteral:
+			return "Array,Int"
+		case _ as DSStringLiteral:
+			return "Array,String"
+		default:
+			return nil
+		}
 	}
 	
 }
