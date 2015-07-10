@@ -27,6 +27,8 @@ import Cocoa
 			return "%d"
 		case "String":
 			return "%s"
+		case "Array,String":
+			return "%s"
 		default:
 			return "%d"
 		}
@@ -145,6 +147,19 @@ import Cocoa
 	func getModuleName() -> String {
 		let nsInputFile = inputFile as NSString
 		return nsInputFile.lastPathComponent.stringByDeletingPathExtension
+	}
+	
+	func getArrayTypeString(expr: DSArrayLiteral) -> String? {
+		switch expr.children[0] {
+		case _ as DSBinaryExpression:
+			fallthrough
+		case _ as DSSignedIntegerLiteral:
+			return "Array,Int"
+		case _ as DSStringLiteral:
+			return "Array,String"
+		default:
+			return nil
+		}
 	}
 	
 }

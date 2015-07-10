@@ -294,15 +294,53 @@ public class DSParser {
 	}
 	
 	func parseType() -> DSType? {
-		switch tokens[0] {
-		case .Identifier(let t):
-			let context = self.lineContext[0]
-			consumeToken()
-			return DSType(identifier: t, lineContext: context)
-		//TODO: void/tuples
-		default:
-			return nil
+		var isArray = false
+		while tokens.count > 0 {
+			switch tokens[0] {
+			case .Identifier(var t):
+				let context = self.lineContext[0]
+				consumeToken()
+				
+				var itemCount: Int? = nil
+				if isArray {
+					t = "Array," + t
+					switch tokens[0] {
+					case .InfixOperator(let op):
+						if op == "*" {
+							consumeToken()
+							
+							switch tokens[0] {
+							case .IntegerLiteral(let n):
+								consumeToken()
+								itemCount = n
+							default:
+								errors.append(DSError(message: "Expexted size in array type declaration.", lineContext: self.lineContext[0]))
+							}
+						}
+					default:
+						errors.append(DSError(message: "Expexted '*' in type declaration.", lineContext: self.lineContext[0]))
+						return nil
+					}
+					
+					switch tokens[0] {
+					case .ArrayRight:
+						consumeToken()
+					default:
+						errors.append(DSError(message: "Expexted ']' in type declaration.", lineContext: self.lineContext[0]))
+					}
+				}
+				
+				return DSType(identifier: t, itemCount: itemCount, lineContext: context)
+			case .ArrayLeft:
+				consumeToken()
+				isArray = true
+			//TODO: void/tuples
+			default:
+				return nil
+			}
 		}
+		
+		return nil
 	}
 	
 	func parseDeclaration() -> String? {
@@ -489,7 +527,7 @@ public class DSParser {
 				return nil
 			}
 		default:
-			returnType = DSType(identifier: "void", lineContext: context)
+			returnType = DSType(identifier: "void", itemCount: nil, lineContext: context)
 		}
 		
 		var body: DSFunctionBody?
@@ -553,6 +591,23 @@ public class DSParser {
 		case .Identifier(let id):
 			consumeToken()
 			identifier =  DSIdentifierString(name: id, lineContext: context)
+			switch tokens[0] {
+			case .ArrayLeft:
+				consumeToken()
+				if let expr = parseExpression() {
+					identifier.arrayAccess = expr
+				}
+				// May not be needed
+				switch tokens[0] {
+				case .ArrayRight:
+					consumeToken()
+				default:
+					errors.append(DSError(message: "Expected ']'", lineContext: self.lineContext[0]))
+					return nil
+				}
+			default:
+				break
+			}
 		default:
 			errors.append(DSError(message: "Missing expected identifier", lineContext: context))
 			return nil

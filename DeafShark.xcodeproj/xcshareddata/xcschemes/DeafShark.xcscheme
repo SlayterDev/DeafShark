@@ -72,7 +72,11 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/Slayter/Xcode/Mac/DeafShark/samples/strings.ds"
+            argument = "/Users/Slayter/Xcode/Mac/DeafShark/hello.ds"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "--verbose"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

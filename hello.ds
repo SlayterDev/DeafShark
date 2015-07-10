@@ -1,17 +1,13 @@
-var n = 25
-var first = 0
-var second = 1
 var next as Int
+var array as [Int*5]
 
-print("The first " + n + " fibonacci numbers are:")
-
-for var c = 0; c < n; c += 1; {
-	if c <= 1 {
-		next = c
-	} else {
-		next = first + second
-		first = second
-		second = next
-	}
-	print(next + " ")
+for var i = 0; i < 5; i += 1; {
+	array[i] = i
 }
+
+for var i = 0; i < 5; i += 1; {
+	println(array[i])
+}
+
+var names = ["Brad", "Kara"]
+println(names[1])

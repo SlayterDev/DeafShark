@@ -23,5 +23,6 @@
 
 +(llvm::Value *) valueForArgument:(DSAST *)argument symbolTable:(std::map<NSString *, llvm::AllocaInst *>)namedValues andBuilder:(llvm::IRBuilder<>)Builder;
 +(llvm::Type *) typeForArgument:(DSType *)argument withBuilder:(llvm::IRBuilder<>)Builder;
++(llvm::Type *) llvmTypeForArrayType:(NSString *)arrayType;
 
 @end

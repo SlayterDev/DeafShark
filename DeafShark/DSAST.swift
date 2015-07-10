@@ -61,21 +61,27 @@ public class DSExpr: DSAST {
 	}
 }
 
-public class DSType: DSAST {
+@objc public class DSType: DSAST {
 	var identifier: String
+	var itemCount: Int?
 	
 	override init() {
 		self.identifier = ""
 		super.init()
 	}
 	
-	init(identifier: String, lineContext: LineContext?) {
+	init(identifier: String, itemCount: Int?, lineContext: LineContext?) {
 		self.identifier = identifier
+		self.itemCount = itemCount
 		super.init(lineContext: lineContext)
 	}
 	
 	override public var description: String {
 		return "DeafSharkType - type:\(identifier)"
+	}
+	
+	func getItemCount() -> Int {
+		return itemCount!
 	}
 }
 
@@ -162,7 +168,7 @@ public class DSFunctionType: DSType {
 	init(parameterType: DSType, returnType: DSType, lineContext: LineContext? = nil) {
 		self.parameterType = parameterType
 		self.returnType = returnType
-		super.init(identifier: "func", lineContext: lineContext)
+		super.init(identifier: "func", itemCount: nil, lineContext: lineContext)
 	}
 	
 	override public var description: String {
@@ -281,6 +287,10 @@ public class DSForStatement: DSConditionalStatement {
 		self.increment = increment
 		super.init(condition: condition, body: body, lineContext: lineContext)
 	}
+	
+	override public var description: String {
+		return "DeafSharkForStatement - condition:\(self.cond.description)" + self.body.description
+	}
 }
 
 public class DSReturnStatement: DSExpr {
@@ -294,6 +304,7 @@ public class DSReturnStatement: DSExpr {
 
 public class DSIdentifierString: DSExpr {
 	var name: String
+	var arrayAccess: DSExpr?
 	
 	init(name: String, lineContext: LineContext) {
 		self.name = name
@@ -301,7 +312,7 @@ public class DSIdentifierString: DSExpr {
 	}
 	
 	override public var description: String {
-		return "DeafSharkIdentifier - name:\(name)"
+		return "DeafSharkIdentifier - name:\(name) " + ((self.arrayAccess == nil) ? "" : "[" + self.arrayAccess!.description + "]")
 	}
 }
 

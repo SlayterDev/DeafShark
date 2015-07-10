@@ -23,7 +23,14 @@ using namespace llvm;
 		OurFPM.run(*it);
 	}
 	
-	theModule->dump();
+	NSArray *args = [[NSProcessInfo processInfo] arguments];
+	
+	if ([args containsObject:@"--verbose"] || [args containsObject:@"--emit-ir"]) {
+		theModule->dump();
+		
+		if ([args containsObject:@"--emit-ir"])
+			exit(0);
+	}
 	
 	[self writeBitcode:theModule];
 }
