@@ -34,4 +34,4 @@ func pow(n as Int, k as Int) -> Int {
 	return retVal
 }
 
-println("The result of 5^2: " + pow(5, 3))
+println("The result of 5^3: " + pow(5, 3))

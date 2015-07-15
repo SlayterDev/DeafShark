@@ -18,7 +18,8 @@ if Process.arguments.count == 1 || Process.arguments.contains("--help") {
 	print("\nOther options:")
 	print("--verbose\tDisplay the AST and LLVM IR during compilation")
 	print("--emit-ast\tDisplay the AST (Abstract Syntax Tree) and stop compilation")
-	print("--emit-ir \tDisplay the LLVM IR (Intermidiate Representation) and stop compilation\n")
+	print("--emit-ir \tDisplay the LLVM IR (Intermidiate Representation) and stop compilation")
+	print("-bc       \tCompile the code to LLVM bitcode\n")
 	exit(0)
 }
 

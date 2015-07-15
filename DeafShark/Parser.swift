@@ -617,6 +617,11 @@ public class DSParser {
 		switch tokens[0] {
 		case .Identifier(let id):
 			consumeToken()
+			
+			if id == "break" {
+				return DSBreakStatement(lineContext: context)
+			}
+			
 			identifier =  DSIdentifierString(name: id, lineContext: context)
 			switch tokens[0] {
 			case .ArrayLeft:
