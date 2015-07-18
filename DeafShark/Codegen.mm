@@ -71,10 +71,16 @@ Constant *putsFunc;
 	Value *index = [self Expression_Codegen:expr.arrayAccess];
 	
 	Value *idxList[2] = {ConstantInt::get(index->getType(), 0), index};
-	
-	Value *ptr = Builder.CreateGEP(array, idxList);
-	
+
 	NSString *type = namedTypes[expr.name];
+	
+	Value *ptr;
+	if ([type isEqual:@"String"]) {
+		ptr = Builder.CreateInBoundsGEP(array, index);
+		ptr = Builder.CreateBitCast(ptr, Type::getInt8Ty(getGlobalContext())->getPointerTo());
+	} else {
+		ptr = Builder.CreateGEP(array, idxList);
+	}
 	
 	if ([type hasSuffix:@"String"])
 		return ptr;
