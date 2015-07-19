@@ -10,6 +10,7 @@
 #import "DeafShark-Swift.h"
 #import "LLVMHelper.h"
 #import "OutputUtils.h"
+#import "StandardLibrary.h"
 
 @implementation Codegen
 
@@ -145,7 +146,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		}
 	} else if ([expr.assignment isKindOfClass:DSCall.class]) {
 		v = [self Call_Codegen:(DSCall *)expr.assignment];
-		DSCall *temp = (DSCall *)expr;
+		DSCall *temp = (DSCall *)expr.assignment;
 		type.identifier = functionTypes[temp.identifier.name];
 	} else if ([expr.assignment isKindOfClass:DSSignedIntegerLiteral.class]) {
 		v = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr.assignment];
@@ -348,6 +349,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 }
 
 +(Value *) Call_Codegen:(DSCall *)expr {
+	Constant *constFunc;
+	
 	if ([expr.identifier.name isEqual:@"println"] || [expr.identifier.name isEqual:@"print"]) {
 		if (!printMade) {
 			std::vector<Type *> putsArgs;
@@ -384,6 +387,18 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		}
 		
 		 return Builder.CreateCall(putsFunc, printArguments);
+	} else if ((constFunc = [StandardLibrary getFunction:expr.identifier.name withBuilder:Builder andModule:theModule]) != nil) {
+		
+		std::vector<Value *> ArgsV;
+		for (unsigned i = 0, e = (unsigned)expr.children.count; i != e; i++) {
+			ArgsV.push_back([LLVMHelper valueForArgument:expr.children[i] symbolTable:namedValues andBuilder:Builder]);
+			if (ArgsV.back() == 0) {
+				[self ErrorV:@"Argument came back nil"];
+				exit(1);
+			}
+		}
+		
+		return Builder.CreateCall(constFunc, ArgsV, "calltmp");
 	} else {
 		Function *calleef = theModule->getFunction([expr.identifier.name cStringUsingEncoding:NSUTF8StringEncoding]);
 		
