@@ -105,11 +105,17 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			
 			input
 			// Match float literal
-			.match(/"^[0-9]*\\.[0-9]+"/"i") {
+			.match(/"^(-)?[0-9]*\\.[0-9]+"/"i") {
 				let num = $0[0] as NSString
 				tokens.append(.FloatLiteral(num.floatValue))
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
+				
+				if Array(arrayLiteral: input)[$0[0].characters.count] == "-" {
+					tokens.append(.InfixOperator(Array(arrayLiteral: input)[$0[0].characters.count]))
+					context.append(LineContext(pos: cachedLinePos, line: cachedLine))
+					linepos += 1
+				}
 			}?
 			// Match an Int literal
 			.match(/"^(-)?[0-9]+"/"i") {
@@ -117,6 +123,12 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 				tokens.append(.IntegerLiteral(num))
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
+				
+				if input[$0[0].characters.count] == "-" {
+					tokens.append(.InfixOperator("-"))
+					context.append(LineContext(pos: cachedLinePos, line: cachedLine))
+					linepos += 1
+				}
 			}?
 			
 			// Language keywords
@@ -208,6 +220,12 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 					context.append(LineContext(pos: newLinePos, line: cachedLine))
 				}
 				linepos += $0[0].characters.count
+				
+				if input[$0[0].characters.count] == "-" {
+					tokens.append(.InfixOperator("-"))
+					context.append(LineContext(pos: cachedLinePos, line: cachedLine))
+					linepos += 1
+				}
 			}?
 			// match string literals
 			.match(/"^\"(\\.|[^\"])*\"") {
@@ -321,6 +339,11 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			
 			let index = input.startIndex
 			let newIndex = advance(index, linepos - cachedLinePos)
+			
+			if line > cachedLinePos {
+				linepos = 0
+			}
+			
 			input = input.substringFromIndex(newIndex)
 		}
 		

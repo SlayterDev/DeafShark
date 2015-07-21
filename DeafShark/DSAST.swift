@@ -302,6 +302,16 @@ public class DSReturnStatement: DSExpr {
 	}
 }
 
+public class DSBreakStatement: DSExpr {
+	init (lineContext: LineContext?) {
+		super.init(assignable: false, lineContext: lineContext)
+	}
+	
+	override public var description: String {
+		return "DeafSharkBreakStatement - break"
+	}
+}
+
 public class DSIdentifierString: DSExpr {
 	var name: String
 	var arrayAccess: DSExpr?

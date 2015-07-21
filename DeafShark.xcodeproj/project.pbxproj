@@ -14,6 +14,7 @@
 		021861FC1B2F64E000D0ED84 /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021861FB1B2F64E000D0ED84 /* Error.swift */; };
 		021861FE1B305F0700D0ED84 /* DSAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021861FD1B305F0700D0ED84 /* DSAST.swift */; };
 		021862001B30636600D0ED84 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021861FF1B30636600D0ED84 /* Parser.swift */; };
+		025459041B5B55F10051770D /* StandardLibrary.mm in Sources */ = {isa = PBXBuildFile; fileRef = 025459031B5B55F10051770D /* StandardLibrary.mm */; };
 		027447AD1B4571EC009EA56A /* OutputUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = 027447AC1B4571EC009EA56A /* OutputUtils.mm */; };
 		027447B31B459D97009EA56A /* compileandlink.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 027447AE1B4598D5009EA56A /* compileandlink.sh */; };
 		02EC96B71B42DC9A00D3D7E1 /* CompilerHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02EC96B61B42DC9A00D3D7E1 /* CompilerHelper.swift */; };
@@ -43,6 +44,8 @@
 		021861FB1B2F64E000D0ED84 /* Error.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Error.swift; sourceTree = "<group>"; };
 		021861FD1B305F0700D0ED84 /* DSAST.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DSAST.swift; sourceTree = "<group>"; };
 		021861FF1B30636600D0ED84 /* Parser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Parser.swift; sourceTree = "<group>"; };
+		025459021B5B55F10051770D /* StandardLibrary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StandardLibrary.h; sourceTree = "<group>"; };
+		025459031B5B55F10051770D /* StandardLibrary.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = StandardLibrary.mm; sourceTree = "<group>"; };
 		027447AB1B4571EC009EA56A /* OutputUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OutputUtils.h; sourceTree = "<group>"; };
 		027447AC1B4571EC009EA56A /* OutputUtils.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = OutputUtils.mm; sourceTree = "<group>"; };
 		027447AE1B4598D5009EA56A /* compileandlink.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = compileandlink.sh; path = /Users/Slayter/Xcode/Mac/DeafShark/DeafShark/compileandlink.sh; sourceTree = "<absolute>"; };
@@ -99,13 +102,15 @@
 			children = (
 				027447AE1B4598D5009EA56A /* compileandlink.sh */,
 				02EC96B61B42DC9A00D3D7E1 /* CompilerHelper.swift */,
+				02F8590C1B4D747B008D6D00 /* Codegen_NonSwift.h */,
 				02B4A8D71B39A2CC006C3669 /* Codegen.h */,
 				02EC96BB1B42E7F800D3D7E1 /* Codegen.mm */,
 				02EC96B81B42E5EE00D3D7E1 /* LLVMHelper.h */,
 				02EC96B91B42E5EE00D3D7E1 /* LLVMHelper.mm */,
 				027447AB1B4571EC009EA56A /* OutputUtils.h */,
 				027447AC1B4571EC009EA56A /* OutputUtils.mm */,
-				02F8590C1B4D747B008D6D00 /* Codegen_NonSwift.h */,
+				025459021B5B55F10051770D /* StandardLibrary.h */,
+				025459031B5B55F10051770D /* StandardLibrary.mm */,
 			);
 			name = Compiler;
 			sourceTree = "<group>";
@@ -207,6 +212,7 @@
 			files = (
 				021861EF1B2F544F00D0ED84 /* main.swift in Sources */,
 				021861FE1B305F0700D0ED84 /* DSAST.swift in Sources */,
+				025459041B5B55F10051770D /* StandardLibrary.mm in Sources */,
 				021861FA1B2F5D7800D0ED84 /* Tokenizer.swift in Sources */,
 				021861F61B2F57C500D0ED84 /* Extensions.swift in Sources */,
 				021861FC1B2F64E000D0ED84 /* Error.swift in Sources */,

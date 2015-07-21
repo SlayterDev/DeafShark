@@ -68,6 +68,11 @@ using namespace llvm;
 	
 	WriteBitcodeToFile(theModule, output);
 	
+	if ([args containsObject:@"-bc"]) {
+		// Stop at bitcode stage
+		exit(0);
+	}
+	
 	[self writeAssembly:outputPath];
 }
 

@@ -1,5 +1,5 @@
 # DeafShark
-The DeafShark Programming Language implemented in Swift and LLVM
+The DeafShark Programming Language implemented in Swift, Objective-C++, and LLVM
 
 ### How Do I Try It?
 You can't do much yet...but if you really want to, [jump to the bottom](https://github.com/SlayterDev/DeafShark#try-it-out).
@@ -38,9 +38,11 @@ Thank you to the [Nifty](https://github.com/mitchellallison/nifty) project by Mi
 the lexer and parser for `DeafShark` since much of the syntax is similar to Swift.
 
 ### Try it out
+Checkout the Develop branch for the bleeding edge changes.
+
 * Make sure you have [LLVM](llvm.org) installed because you'll need it. [Here is a quick guide](https://github.com/SlayterDev/DeafShark/wiki/Install-LLVM) for installing LLVM on OS X.
 * Next clone the repository and open up the Xcode project. 
-* Create a file called `hello.ds` (or whatever you want so long as it ends with `.ds`). In that file put `print("Hello, World\n")`.
+* Create a file called `hello.ds` (or whatever you want so long as it ends with `.ds`). In that file put `print("Hello, World")`.
 * You'll need to add the location of your source file as a commandline argument to the Scheme (upper left where it says `DeafShark`). 
 * Optionally you can add the `-o` argument and another argument that is the location to store the output file (use the full path, otherwise it dumps the file with the debug executable).
 * When you run the compiler, it will dump out the AST of the source as well as the LLVM IR code. This is mainly for debug purposes and will likely be removed in the future

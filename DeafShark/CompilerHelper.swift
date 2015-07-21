@@ -21,12 +21,12 @@ import Cocoa
 		return self.printCallArgs
 	}
 	
-	func formatForType(type: String) -> String {
+	func formatForType(type: String, arrayAccess: Bool) -> String {
 		switch (type) {
 		case "Int":
 			return "%d"
 		case "String":
-			return "%s"
+			return (arrayAccess) ? "%c" : "%s"
 		case "Array,String":
 			return "%s"
 		default:
@@ -55,11 +55,11 @@ import Cocoa
 				printCallArgs += binExpArgs
 			case let expr as DSIdentifierString:
 				let type = Codegen.typeForIdentifier(expr)
-				format += formatForType(type)
+				format += formatForType(type, arrayAccess: (expr.arrayAccess != nil) ? true : false)
 				printCallArgs.append(expr)
 			case let expr as DSCall:
 				let type = Codegen.typeForFunction(expr)
-				format += formatForType(type)
+				format += formatForType(type, arrayAccess: false)
 				printCallArgs.append(expr)
 			default:
 				break
@@ -91,11 +91,11 @@ import Cocoa
 			args += binExpArgs
 		case let expr as DSIdentifierString:
 			let type = Codegen.typeForIdentifier(expr)
-			lhsFormat += formatForType(type)
+			lhsFormat += formatForType(type, arrayAccess: (expr.arrayAccess != nil) ? true : false)
 			args.append(expr)
 		case let expr as DSCall:
 			let type = Codegen.typeForFunction(expr)
-			lhsFormat += formatForType(type)
+			lhsFormat += formatForType(type, arrayAccess: false)
 			printCallArgs.append(expr)
 		default:
 			lhsFormat += ""
@@ -116,11 +116,11 @@ import Cocoa
 			args += binExpArgs
 		case let expr as DSIdentifierString:
 			let type = Codegen.typeForIdentifier(expr)
-			rhsFormat += formatForType(type)
+			rhsFormat += formatForType(type, arrayAccess: (expr.arrayAccess != nil) ? true : false)
 			args.append(expr)
 		case let expr as DSCall:
 			let type = Codegen.typeForFunction(expr)
-			rhsFormat += formatForType(type)
+			rhsFormat += formatForType(type, arrayAccess: false)
 			printCallArgs.append(expr)
 		default:
 			rhsFormat += ""
