@@ -390,11 +390,38 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 	} else if ((constFunc = [StandardLibrary getFunction:expr.identifier.name withBuilder:Builder andModule:theModule]) != nil) {
 		
 		std::vector<Value *> ArgsV;
-		for (unsigned i = 0, e = (unsigned)expr.children.count; i != e; i++) {
-			ArgsV.push_back([LLVMHelper valueForArgument:expr.children[i] symbolTable:namedValues andBuilder:Builder]);
-			if (ArgsV.back() == 0) {
-				[self ErrorV:@"Argument came back nil"];
+		
+		if ([expr.identifier.name isEqual:@"intInput"] || [expr.identifier.name isEqual:@"stringInput"]) {
+			char format[3];
+			if ([expr.identifier.name isEqual:@"intInput"]) {
+				strcpy(format, "%d");
+			} else {
+				strcpy(format, "%s");
+			}
+			
+			ArgsV.push_back(Builder.CreateGlobalStringPtr(format));
+			
+			if (expr.children.count != 1) {
+				[self ErrorV:[NSString stringWithFormat:@"Invalid number of arguments to %@", expr.identifier.name]];
 				exit(1);
+			}
+			
+			DSIdentifierString *arg = (DSIdentifierString *)expr.children[0];
+			Value *ptr = namedValues[arg.name];
+			
+			if (ptr == 0) {
+				[self ErrorV:[NSString stringWithFormat:@"%@ is not a valid identifier", arg.name]];
+				exit(1);
+			}
+			
+			ArgsV.push_back(ptr);
+		} else {
+			for (unsigned i = 0, e = (unsigned)expr.children.count; i != e; i++) {
+				ArgsV.push_back([LLVMHelper valueForArgument:expr.children[i] symbolTable:namedValues andBuilder:Builder]);
+				if (ArgsV.back() == 0) {
+					[self ErrorV:@"Argument came back nil"];
+					exit(1);
+				}
 			}
 		}
 		

@@ -12,10 +12,10 @@
 
 using namespace llvm;
 
-static std::map<NSString *, Function *> functions;
+static std::map<NSString *, Constant *> functions;
 
 +(Constant *) getFunction:(NSString *)functionName withBuilder:(IRBuilder<>)Builder andModule:(Module *)theModule {
-	std::map<NSString *, Function *>::iterator iter = functions.find(functionName);
+	std::map<NSString *, Constant *>::iterator iter = functions.find(functionName);
 	if (iter != functions.end()) {
 		return functions[functionName];
 	}
@@ -45,7 +45,18 @@ static std::map<NSString *, Function *> functions;
 		sRandCallArgs.push_back(Builder.CreateCall(timeFunc, timeCallArgs));
 		Builder.CreateCall(srandFunc, sRandCallArgs);
 		
-		return theModule->getOrInsertFunction("rand", randType);
+		functions[functionName] = theModule->getOrInsertFunction("rand", randType);
+		
+		return functions[functionName];
+	} else if ([functionName isEqual:@"intInput"] || [functionName isEqual:@"stringInput"]) {
+		std::vector<Type *> scanfArgs;
+		scanfArgs.push_back(Builder.getInt8PtrTy());
+		ArrayRef<Type *> argsRef(scanfArgs);
+		
+		FunctionType *scanfType = FunctionType::get(Type::getInt32Ty(getGlobalContext()), argsRef, true);
+		functions[functionName] = theModule->getOrInsertFunction("scanf", scanfType);
+		
+		return functions[functionName];
 	}
 	
 	return nil;
