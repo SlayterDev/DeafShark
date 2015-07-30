@@ -412,7 +412,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 			Value *ptr = namedValues[arg.name];
 			
 			if (ptr == 0) {
-				[self ErrorV:[NSString stringWithFormat:@"%@ is not a valid identifier", arg.name]];
+				[self ErrorV:[NSString stringWithFormat:@"%@ is not a valid identifier: %@", arg.name, arg.lineContext.description]];
 				exit(1);
 			}
 			
