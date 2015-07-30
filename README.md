@@ -40,7 +40,12 @@ the lexer and parser for `DeafShark` since much of the syntax is similar to Swif
 ### Try it out
 Checkout the Develop branch for the bleeding edge changes.
 
-* Make sure you have [LLVM](llvm.org) installed because you'll need it. [Here is a quick guide](https://github.com/SlayterDev/DeafShark/wiki/Install-LLVM) for installing LLVM on OS X.
+**Requirements**
+
+Make sure you have [LLVM](llvm.org) installed because you'll need it. [Here is a quick guide](https://github.com/SlayterDev/DeafShark/wiki/Install-LLVM) for installing LLVM on OS X.
+
+Also DeafShark uses swift 2. So you will need Xcode 7 (Beta 4 at the time of this writing).
+
 * Next clone the repository and open up the Xcode project. 
 * Create a file called `hello.ds` (or whatever you want so long as it ends with `.ds`). In that file put `print("Hello, World")`.
 * You'll need to add the location of your source file as a commandline argument to the Scheme (upper left where it says `DeafShark`). 
