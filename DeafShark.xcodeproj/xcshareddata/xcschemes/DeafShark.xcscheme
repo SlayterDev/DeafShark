@@ -81,7 +81,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/Slayter/Xcode/Mac/DeafShark/samples/strings.ds"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/Slayter/Xcode/Mac/DeafShark/samples/math.ds"
@@ -89,7 +89,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/Slayter/Xcode/Mac/DeafShark/samples/triangle.ds"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "--verbose"

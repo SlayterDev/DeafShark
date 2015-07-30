@@ -77,8 +77,10 @@ Constant *putsFunc;
 	
 	Value *ptr;
 	if ([type isEqual:@"String"]) {
-		ptr = Builder.CreateInBoundsGEP(array, index);
-		ptr = Builder.CreateBitCast(ptr, Type::getInt8Ty(getGlobalContext())->getPointerTo());
+		//ptr = Builder.CreateGEP(array, ConstantInt::get(Type::getInt32Ty(getGlobalContext()), APInt(32, 0)));
+		ptr = Builder.CreateBitCast(array, Type::getInt8PtrTy(getGlobalContext()));
+		ptr = Builder.CreateGEP(ptr, index);
+		//ptr = Builder.CreateBitCast(ptr, Type::getInt8Ty(getGlobalContext())->getPointerTo());
 	} else {
 		ptr = Builder.CreateGEP(array, idxList);
 	}
