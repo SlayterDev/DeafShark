@@ -76,12 +76,16 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "/Users/Slayter/Xcode/Mac/DeafShark/samples/rps.ds"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "-bc"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/Slayter/Xcode/Mac/DeafShark/samples/strings.ds"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/Slayter/Xcode/Mac/DeafShark/samples/math.ds"

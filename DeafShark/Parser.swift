@@ -478,7 +478,7 @@ public class DSParser {
 		case .Semicolon:
 			consumeToken()
 		default:
-			errors.append(DSError(message: "Missing expected semicolon.", lineContext: self.lineContext[0]))
+			break
 		}
 		
 		if let body = parseBody(true) {

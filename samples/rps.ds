@@ -1,0 +1,69 @@
+// Horribly written Rock, Paper, Scissors game in DeafShark
+// To be re-written when else if's are supported
+
+func max(x as Int, y as Int) -> Int {
+	var retVal as Int
+
+	if x > y {
+		retVal = x
+	} else {
+		retVal = y
+	}
+
+	return retVal
+}
+
+func gameOver(result as Int) {
+	if result == 0 {
+		println("You win!")
+	} else {
+		if result == 1 {
+			println("You lose!")
+		} else {
+			println("You tie!")
+		}
+	}
+}
+
+func getWinner(player as Int, ai as Int) {
+	// This is because string arrays must be equally sized for now :/
+	var choices = ["Rock    ", "Paper   ", "Scissors"]
+	println("AI chooses " + choices[ai])
+
+	if player == ai {
+		gameOver(3)
+	} else {
+		var maxVal = max(player, ai)
+		if maxVal == player {
+			if player == 2 {
+				if ai == 0 {
+					gameOver(1)
+				} else {
+					gameOver(0)
+				}
+			} else {
+				gameOver(0)
+			}
+		} else {
+			if ai == 2 {
+				if player == 0 {
+					gameOver(0)
+				} else {
+					gameOver(1)
+				}
+			} else {
+				gameOver(1)
+			}
+		}
+	}
+}
+
+
+println("Let's play Rock, Paper, Scissors!")
+
+var plyr as Int
+print("Enter your choice: Rock[0], Paper[1], Scissors[2]: ")
+intInput(plyr)
+var aiChoice = random() % 3
+
+getWinner(plyr, aiChoice)

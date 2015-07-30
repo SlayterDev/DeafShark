@@ -8,13 +8,17 @@
 
 import Cocoa
 
-public class LineContext {
+@objc public class LineContext: NSObject {
 	public var pos: Int
 	public var line: Int
 	
 	init(pos: Int, line: Int) {
 		self.pos = pos
 		self.line = line
+	}
+	
+	override public var description: String {
+		return "line: \(self.line) pos: \(self.pos)"
 	}
 }
 
