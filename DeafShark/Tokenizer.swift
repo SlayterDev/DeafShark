@@ -8,7 +8,7 @@
 
 import Cocoa
 
-@objc public class LineContext {
+@objc public class LineContext: NSObject {
 	public var pos: Int
 	public var line: Int
 	
@@ -17,7 +17,7 @@ import Cocoa
 		self.line = line
 	}
 	
-	var description: String {
+	override public var description: String {
 		return "line: \(self.line) pos: \(self.pos)"
 	}
 }
