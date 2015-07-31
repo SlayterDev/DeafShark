@@ -421,17 +421,35 @@ public class DSParser {
 				return DSWhileStatement(condition: cond, body: body, lineContext: context)
 			case .If:
 				let ifstat = DSIfStatement(condition: cond, body: body, lineContext: context)
-				switch tokens[0] {
-				case .Else:
-					consumeToken()
-					if let elseBody = parseBody(true) {
-						ifstat.elseBody = elseBody
-					} else {
-						errors.append(DSError(message: "Missing expected 'else' body.", lineContext: self.lineContext[0]))
-						return nil
+				while tokens.count > 0 {
+					switch tokens[0] {
+					case .Else:
+						consumeToken()
+						
+						// Check for else if
+						switch tokens[0] {
+						case .LeftBrace:
+							if let elseBody = parseBody(true) {
+								ifstat.elseBody = elseBody
+								return ifstat
+							} else {
+								errors.append(DSError(message: "Missing expected 'else' body.", lineContext: self.lineContext[0]))
+								return nil
+							}
+						case .If:
+							consumeToken()
+							if let elifCond = parseExpression(), let elifBody = parseBody(true) {
+								ifstat.alternates?.append(DSIfStatement(condition: elifCond, body: elifBody, lineContext: self.lineContext[0]))
+							} else {
+								errors.append(DSError(message: "Missing expected 'else if' body.", lineContext: self.lineContext[0]))
+								return nil
+							}
+						default:
+							errors.append(DSError(message: "Missing expected 'else' body.", lineContext: self.lineContext[0]))
+						}
+					default:
+						break
 					}
-				default:
-					break
 				}
 				return ifstat
 			default:

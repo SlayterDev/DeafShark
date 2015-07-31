@@ -261,14 +261,22 @@ public class DSConditionalStatement: DSAST {
 
 public class DSIfStatement: DSConditionalStatement {
 	var elseBody: DSBody?
+	var alternates: [DSIfStatement]?
 	
 	override init(condition: DSExpr, body: DSBody, lineContext: LineContext?) {
 		self.elseBody = nil
+		self.alternates = [DSIfStatement]()
 		super.init(condition: condition, body: body, lineContext: lineContext)
 	}
 	
 	override public var description: String {
-		return "DeafSharkIfStatement - condition:\(self.cond.description)"
+		var desc = "DeafSharkIfStatement - condition:\(self.cond.description)"
+		
+		for alt in alternates! {
+			desc += " " + alt.description
+		}
+		
+		return desc
 	}
 }
 
