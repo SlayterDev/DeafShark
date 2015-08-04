@@ -46,11 +46,18 @@ Make sure you have [LLVM](llvm.org) installed because you'll need it. [Here is a
 
 Also DeafShark uses swift 2. So you will need Xcode 7 (Beta 4 at the time of this writing).
 
-* Next clone the repository and open up the Xcode project. 
-* Create a file called `hello.ds` (or whatever you want so long as it ends with `.ds`). In that file put `print("Hello, World")`.
-* You'll need to add the location of your source file as a commandline argument to the Scheme (upper left where it says `DeafShark`). 
-* Optionally you can add the `-o` argument and another argument that is the location to store the output file (use the full path, otherwise it dumps the file with the debug executable).
-* When you run the compiler, it will dump out the AST of the source as well as the LLVM IR code. This is mainly for debug purposes and will likely be removed in the future
-* When the program finishes, you should have a binary file by the same name as your input file. If this didn't work, there is a chance your llvm executables are in a different place. Edit line 9 of the file `/usr/local/DeafShark/compileandlink.sh` to point to the location of `llc` on your machine. If this still doesn't work, then it is most likely because your using parts of the language that have not been developed yet.
+**Build the Compiler**
+
+* Clone the repository somewhere convenient. 
+* Run the `OSXBuildScript.sh` script to build the compiler. It will dump the executable in a directory called `build` inside the current directory.
+* Optionally move and/or rename the executable in the `build` directory wherever you like
+
+**First Program**
+
+* Create a file called `hello.ds` (or whatever you want so long as it ends with `.ds`). In that file put `println("Hello, World")`.
+* Compile the program using `./DeafShark hello.ds`
+* When the compiler finishes, you should have a binary file by the same name as your input file. 
+
+-- If this didn't work, there is a chance your llvm executables are in a different place. Edit line 9 of the file `/usr/local/DeafShark/compileandlink.sh` to point to the location of `llc` on your machine. If this still doesn't work, then it is most likely because your using parts of the language that have not been developed yet.
 
 Congratulations! You just wrote and ran your first `DeafShark` program! Probably pretty underwhelming at this point in the development. In the future, I plan to have executable versions of the `DeafShark` compiler that can be run from the command line.
