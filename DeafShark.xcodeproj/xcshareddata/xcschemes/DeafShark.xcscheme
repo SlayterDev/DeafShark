@@ -89,11 +89,11 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/Slayter/Xcode/Mac/DeafShark/samples/math.ds"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/Slayter/Xcode/Mac/DeafShark/samples/triangle.ds"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "--verbose"
