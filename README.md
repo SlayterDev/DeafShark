@@ -42,7 +42,7 @@ Checkout the Develop branch for the bleeding edge changes.
 
 **Requirements**
 
-Make sure you have [LLVM](llvm.org) installed because you'll need it. [Here is a quick guide](https://github.com/SlayterDev/DeafShark/wiki/Install-LLVM) for installing LLVM on OS X.
+Make sure you have [LLVM](http://llvm.org) installed because you'll need it. [Here is a quick guide](https://github.com/SlayterDev/DeafShark/wiki/Install-LLVM) for installing LLVM on OS X.
 
 Also DeafShark uses swift 2. So you will need [Xcode 7](https://developer.apple.com/xcode/downloads/) (Beta 4 at the time of this writing).
 
