@@ -422,6 +422,7 @@ public class DSParser {
 			case .If:
 				let ifstat = DSIfStatement(condition: cond, body: body, lineContext: context)
 				while tokens.count > 0 {
+					var breakLoop = false
 					switch tokens[0] {
 					case .Else:
 						consumeToken()
@@ -448,6 +449,11 @@ public class DSParser {
 							errors.append(DSError(message: "Missing expected 'else' body.", lineContext: self.lineContext[0]))
 						}
 					default:
+						breakLoop = true
+						break
+					}
+					
+					if breakLoop {
 						break
 					}
 				}

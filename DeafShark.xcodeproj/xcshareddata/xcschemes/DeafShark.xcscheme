@@ -73,7 +73,7 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "/Users/Slayter/Xcode/Mac/DeafShark/hello.ds"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/Slayter/Xcode/Mac/DeafShark/samples/rps.ds"
@@ -89,7 +89,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/Slayter/Xcode/Mac/DeafShark/samples/math.ds"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/Slayter/Xcode/Mac/DeafShark/samples/triangle.ds"
