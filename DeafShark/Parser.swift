@@ -171,44 +171,71 @@ public class DSParser {
 			return lhs
 		}
 		
+		while tokens.count > 0 {
 		switch tokens[0] {
-		case .InfixOperator(let op):
-			let tokenPrecedence = getOperatorPrecedence(op)
-			
-			if tokenPrecedence < precedence {
-				return lhs
-			}
-			
-			consumeToken()
-			
-			if let rhs = parsePrimary() {
-				if tokens.count == 0 {
-					return DSBinaryExpression(op: op, lhs: lhs, rhs: rhs)
+			case .InfixOperator(let op):
+				let tokenPrecedence = getOperatorPrecedence(op)
+				
+				if tokenPrecedence < precedence {
+					return lhs
 				}
 				
-				switch tokens[0] {
-				case .InfixOperator(let nextOp):
-					let nextPrecedence = getOperatorPrecedence(nextOp)
-					
-					// next token is higher precedence
-					if tokenPrecedence < nextPrecedence {
-						if let newRhs = parseOperationRHS(precedence: tokenPrecedence, lhs: rhs) {
-							return parseOperationRHS(precedence: precedence + 1, lhs: DSBinaryExpression(op: op, lhs: lhs, rhs: newRhs))
-						} else {
-							return nil
-						}
+				consumeToken()
+				
+				if let rhs = parsePrimary() {
+					if tokens.count == 0 {
+						return DSBinaryExpression(op: op, lhs: lhs, rhs: rhs)
 					}
-					return parseOperationRHS(precedence: precedence + 1, lhs: DSBinaryExpression(op: op, lhs: lhs, rhs: rhs))
-				default:
-					return DSBinaryExpression(op: op, lhs: lhs, rhs: rhs)
+					
+					switch tokens[0] {
+					case .InfixOperator(let nextOp):
+						let nextPrecedence = getOperatorPrecedence(nextOp)
+						
+						// next token is higher precedence
+						if tokenPrecedence < nextPrecedence {
+							if let newRhs = parseOperationRHS(precedence: tokenPrecedence, lhs: rhs) {
+								return parseOperationRHS(precedence: precedence + 1, lhs: DSBinaryExpression(op: op, lhs: lhs, rhs: newRhs))
+							} else {
+								return nil
+							}
+						}
+						return parseOperationRHS(precedence: precedence + 1, lhs: DSBinaryExpression(op: op, lhs: lhs, rhs: rhs))
+					default:
+						return DSBinaryExpression(op: op, lhs: lhs, rhs: rhs)
+					}
+				} else {
+					return nil
 				}
-			} else {
-				return nil
+			case .LeftBracket:
+				consumeToken()
+				
+				var depth = 1
+				for token in tokens {
+					switch token {
+					case .RightBracket:
+						depth--
+					case .LeftBracket:
+						depth++
+					default:
+						break
+					}
+					
+					if depth == 0 {
+						break
+					}
+				}
+				
+				if depth > 0 {
+					errors.append(DSError(message: "Mismatched parentheses", lineContext: self.lineContext[0]))
+					return nil
+				}
+			//TODO: Handle pre/postfix ops
+			default:
+				return lhs
 			}
-		//TODO: Handle pre/postfix ops
-		default:
-			return lhs
 		}
+		
+		return lhs
 	}
 	
 	func parseAssignment(store: DSExpr) -> DSAssignment? {
@@ -451,7 +478,7 @@ public class DSParser {
 		case .Semicolon:
 			consumeToken()
 		default:
-			errors.append(DSError(message: "Missing expected semicolon.", lineContext: self.lineContext[0]))
+			break
 		}
 		
 		if let body = parseBody(true) {
@@ -590,6 +617,11 @@ public class DSParser {
 		switch tokens[0] {
 		case .Identifier(let id):
 			consumeToken()
+			
+			if id == "break" {
+				return DSBreakStatement(lineContext: context)
+			}
+			
 			identifier =  DSIdentifierString(name: id, lineContext: context)
 			switch tokens[0] {
 			case .ArrayLeft:

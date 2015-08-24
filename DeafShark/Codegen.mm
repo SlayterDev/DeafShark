@@ -10,6 +10,7 @@
 #import "DeafShark-Swift.h"
 #import "LLVMHelper.h"
 #import "OutputUtils.h"
+#import "StandardLibrary.h"
 
 @implementation Codegen
 
@@ -71,10 +72,18 @@ Constant *putsFunc;
 	Value *index = [self Expression_Codegen:expr.arrayAccess];
 	
 	Value *idxList[2] = {ConstantInt::get(index->getType(), 0), index};
-	
-	Value *ptr = Builder.CreateGEP(array, idxList);
-	
+
 	NSString *type = namedTypes[expr.name];
+	
+	Value *ptr;
+	if ([type isEqual:@"String"]) {
+		//ptr = Builder.CreateGEP(array, ConstantInt::get(Type::getInt32Ty(getGlobalContext()), APInt(32, 0)));
+		ptr = Builder.CreateBitCast(array, Type::getInt8PtrTy(getGlobalContext()));
+		ptr = Builder.CreateGEP(ptr, index);
+		//ptr = Builder.CreateBitCast(ptr, Type::getInt8Ty(getGlobalContext())->getPointerTo());
+	} else {
+		ptr = Builder.CreateGEP(array, idxList);
+	}
 	
 	if ([type hasSuffix:@"String"])
 		return ptr;
@@ -139,7 +148,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		}
 	} else if ([expr.assignment isKindOfClass:DSCall.class]) {
 		v = [self Call_Codegen:(DSCall *)expr.assignment];
-		DSCall *temp = (DSCall *)expr;
+		DSCall *temp = (DSCall *)expr.assignment;
 		type.identifier = functionTypes[temp.identifier.name];
 	} else if ([expr.assignment isKindOfClass:DSSignedIntegerLiteral.class]) {
 		v = [self IntegerExpr_Codegen:(DSSignedIntegerLiteral *)expr.assignment];
@@ -342,6 +351,8 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 }
 
 +(Value *) Call_Codegen:(DSCall *)expr {
+	Constant *constFunc;
+	
 	if ([expr.identifier.name isEqual:@"println"] || [expr.identifier.name isEqual:@"print"]) {
 		if (!printMade) {
 			std::vector<Type *> putsArgs;
@@ -378,6 +389,45 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 		}
 		
 		 return Builder.CreateCall(putsFunc, printArguments);
+	} else if ((constFunc = [StandardLibrary getFunction:expr.identifier.name withBuilder:Builder andModule:theModule]) != nil) {
+		
+		std::vector<Value *> ArgsV;
+		
+		if ([expr.identifier.name isEqual:@"intInput"] || [expr.identifier.name isEqual:@"stringInput"]) {
+			char format[3];
+			if ([expr.identifier.name isEqual:@"intInput"]) {
+				strcpy(format, "%d");
+			} else {
+				strcpy(format, "%s");
+			}
+			
+			ArgsV.push_back(Builder.CreateGlobalStringPtr(format));
+			
+			if (expr.children.count != 1) {
+				[self ErrorV:[NSString stringWithFormat:@"Invalid number of arguments to %@", expr.identifier.name]];
+				exit(1);
+			}
+			
+			DSIdentifierString *arg = (DSIdentifierString *)expr.children[0];
+			Value *ptr = namedValues[arg.name];
+			
+			if (ptr == 0) {
+				[self ErrorV:[NSString stringWithFormat:@"%@ is not a valid identifier: %@", arg.name, arg.lineContext.description]];
+				exit(1);
+			}
+			
+			ArgsV.push_back(ptr);
+		} else {
+			for (unsigned i = 0, e = (unsigned)expr.children.count; i != e; i++) {
+				ArgsV.push_back([LLVMHelper valueForArgument:expr.children[i] symbolTable:namedValues andBuilder:Builder]);
+				if (ArgsV.back() == 0) {
+					[self ErrorV:@"Argument came back nil"];
+					exit(1);
+				}
+			}
+		}
+		
+		return Builder.CreateCall(constFunc, ArgsV, "calltmp");
 	} else {
 		Function *calleef = theModule->getFunction([expr.identifier.name cStringUsingEncoding:NSUTF8StringEncoding]);
 		
