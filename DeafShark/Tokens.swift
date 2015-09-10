@@ -338,7 +338,7 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			}
 			
 			let index = input.startIndex
-			let newIndex = advance(index, linepos - cachedLinePos)
+			let newIndex = index.advancedBy(linepos - cachedLinePos)
 			
 			if line > cachedLinePos {
 				linepos = 0

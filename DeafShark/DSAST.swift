@@ -143,14 +143,14 @@ public class DSBinaryExpression: DSExpr {
 		
 		switch lhs {
 		case let l as DSBinaryExpression:
-			self.children.extend(l.children)
+			self.children.appendContentsOf(l.children)
 		default:
 			self.children.append(lhs)
 		}
 		
 		switch rhs {
 		case let r as DSBinaryExpression:
-			self.children.extend(r.children)
+			self.children.appendContentsOf(r.children)
 		default:
 			self.children.append(rhs)
 		}
@@ -239,7 +239,7 @@ public class DSCall: DSExpr {
 		self.identifier = identifier
 		super.init(lineContext: nil)
 		let args = arguments as [DSAST]
-		self.children.extend(args)
+		self.children.appendContentsOf(args)
 	}
 	
 	override public var description: String {
