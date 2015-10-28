@@ -55,7 +55,7 @@ Also DeafShark uses swift 2. So you will need [Xcode 7](https://developer.apple.
 **First Program**
 
 * Create a file called `hello.ds` (or whatever you want so long as it ends with `.ds`). In that file put `println("Hello, World")`.
-* Compile the program using `./DeafShark hello.ds`
+* Compile the program using `./build/DeafShark hello.ds` (Or wherever your `DeafShark` executable is)
 * When the compiler finishes, you should have a binary file by the same name as your input file. 
 
 -- If this didn't work, there is a chance your llvm executables are in a different place. Edit line 9 of the file `/usr/local/DeafShark/compileandlink.sh` to point to the location of `llc` on your machine. If this still doesn't work, then it is most likely because your using parts of the language that have not been developed yet.
