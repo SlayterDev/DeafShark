@@ -45,6 +45,7 @@ Constant *putsFunc;
 	Type *memberType = [LLVMHelper llvmTypeForArrayType:type];
 	
 	std::vector<Constant *> elems;
+	NSString *maxLength = @"";
 	for (DSExpr *child in expr.children) {
 		if ([type hasSuffix:@"Int"]) {
 			DSSignedIntegerLiteral *intLit = (DSSignedIntegerLiteral *)child;
@@ -55,9 +56,9 @@ Constant *putsFunc;
 			DSStringLiteral *stringLit = (DSStringLiteral *)child;
 			Constant *elem = ConstantDataArray::getString(getGlobalContext(), [stringLit.val cStringUsingEncoding:NSUTF8StringEncoding]);
 			
-			NSString *maxLength = @"";
 			if (stringLit.val.length > maxLength.length) { // Grab the type of the largest string
 				memberType = elem->getType();
+				maxLength = stringLit.val;
 			}
 			
 			elems.push_back(elem);
@@ -499,6 +500,7 @@ static AllocaInst *CreateEntryBlockAlloca(Function *theFunction, DSDeclaration *
 
 +(Function *) Function_Codegen:(DSFunctionDeclaration *)expr {
 	namedValues.clear();
+	namedTypes.clear();
 	
 	Function *theFunction = [self Prototype_Codegen:expr.prototype];
 	if (theFunction == 0)
