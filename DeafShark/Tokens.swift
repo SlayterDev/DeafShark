@@ -89,8 +89,9 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 		}
 	}
 	
-	static func tokenize(var input: String) -> (DeafSharkLexicalRepresentation, [DSError]?) {
+	static func tokenize(inputString: String) -> (DeafSharkLexicalRepresentation, [DSError]?) {
 		var errors = [DSError]()
+		var input = inputString
 		
 		let identifierRegex = "([a-z_][a-z0-9]*)"
 		

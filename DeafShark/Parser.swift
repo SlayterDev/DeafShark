@@ -213,9 +213,9 @@ public class DSParser {
 				for token in tokens {
 					switch token {
 					case .RightBracket:
-						depth--
+						depth -= 1
 					case .LeftBracket:
-						depth++
+						depth += 1
 					default:
 						break
 					}
