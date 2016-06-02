@@ -143,14 +143,14 @@ public class DSBinaryExpression: DSExpr {
 		
 		switch lhs {
 		case let l as DSBinaryExpression:
-			self.children.extend(l.children)
+			self.children.appendContentsOf(l.children)
 		default:
 			self.children.append(lhs)
 		}
 		
 		switch rhs {
 		case let r as DSBinaryExpression:
-			self.children.extend(r.children)
+			self.children.appendContentsOf(r.children)
 		default:
 			self.children.append(rhs)
 		}
@@ -239,7 +239,7 @@ public class DSCall: DSExpr {
 		self.identifier = identifier
 		super.init(lineContext: nil)
 		let args = arguments as [DSAST]
-		self.children.extend(args)
+		self.children.appendContentsOf(args)
 	}
 	
 	override public var description: String {
@@ -261,14 +261,22 @@ public class DSConditionalStatement: DSAST {
 
 public class DSIfStatement: DSConditionalStatement {
 	var elseBody: DSBody?
+	var alternates: [DSIfStatement]?
 	
 	override init(condition: DSExpr, body: DSBody, lineContext: LineContext?) {
 		self.elseBody = nil
+		self.alternates = [DSIfStatement]()
 		super.init(condition: condition, body: body, lineContext: lineContext)
 	}
 	
 	override public var description: String {
-		return "DeafSharkIfStatement - condition:\(self.cond.description)"
+		var desc = "DeafSharkIfStatement - condition:\(self.cond.description)"
+		
+		for alt in alternates! {
+			desc += " " + alt.description
+		}
+		
+		return desc
 	}
 }
 

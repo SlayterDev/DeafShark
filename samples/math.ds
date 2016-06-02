@@ -14,6 +14,14 @@ func square(n as Int) -> Int {
 	return n * n
 }
 
+func max(x as Int, y as Int) -> Int {
+	if x > y {
+		return x
+	} else {
+		return y
+	}
+}
+
 func pow(n as Int, k as Int) -> Int {
 	var retVal as Int
 

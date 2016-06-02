@@ -146,7 +146,7 @@ import Cocoa
 	
 	func getModuleName() -> String {
 		let nsInputFile = inputFile as NSString
-		return nsInputFile.lastPathComponent.stringByDeletingPathExtension
+		return nsInputFile.lastPathComponent
 	}
 	
 	func getArrayTypeString(expr: DSArrayLiteral) -> String? {
