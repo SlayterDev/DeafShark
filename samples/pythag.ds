@@ -1,0 +1,37 @@
+func square(x as Int) -> Int {
+	return x * x
+}
+
+func sqrt(m as Int) -> Int {
+	var i = 0
+	var x1 as Int
+	var x2 as Int
+
+	while i * i <= m {
+		i += 1
+	}
+	x1 = i
+
+	for var j = 0; j < 10; j += 1 {
+		x2 = m
+		x2 /= x1
+		x2 += x1
+		x2 /= 2
+		x1 = x2
+	}
+
+	return x2
+}
+
+var x as Int
+var y as Int
+print("Enter side a: ")
+intInput(x)
+print("Enter side b: ")
+intInput(y)
+println()
+
+var c = square(x) + square(y)
+c = sqrt(c)
+println("Square root of c is " + c)
+
