@@ -26,12 +26,14 @@ LLVM IR "assembly" which will then be compiled into an executable binary.
 
 **Sample Syntax**
 
-    let x = 5 + 5
-    var y as Int
-    
-    func add(x as Int, y as Int) -> Int {
-      return x + y
-    }
+```swift
+let x = 5 + 5
+var y as Int
+
+func add(x as Int, y as Int) -> Int {
+  return x + y
+}
+```
 
 ### Aknowledgments
 Thank you to the [Nifty](https://github.com/mitchellallison/nifty) project by Mitchell Allison for giving me a jumpstart on
