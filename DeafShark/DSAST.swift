@@ -8,7 +8,7 @@
 
 import Cocoa
 
-@objc public class DSAST: NSObject {
+@objc open class DSAST: NSObject {
 	var children: [DSAST] = []
 	
 	override init() {
@@ -20,7 +20,7 @@ import Cocoa
 		self.lineContext = lineContext
 	}
 	
-	private var explicitLineContext: LineContext?
+	fileprivate var explicitLineContext: LineContext?
 	
 	var lineContext: LineContext? {
 		get {
@@ -31,29 +31,29 @@ import Cocoa
 		}
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		return ("DeafSharkAST" + self.childDescriptions)
 	}
 	
-	public var childDescriptions: String {
+	open var childDescriptions: String {
 		let indentedDescriptions = self.children.map({ (child: DSAST) -> String in
-			child.description.componentsSeparatedByString("\n").reduce("") {
+			child.description.components(separatedBy: "\n").reduce("") {
 				return $0 + "\n\t" + $1
 			}
 		})
 		
-		return indentedDescriptions.reduce("", combine: +)
+		return indentedDescriptions.reduce("", +)
 	}
 }
 
 // Program Body
-public class DSBody: DSAST {
+open class DSBody: DSAST {
 	func codeGen() {
-		Codegen.TopLevel_Codegen(self)
+		Codegen.topLevel_Codegen(self)
 	}
 }
 
-public class DSExpr: DSAST {
+open class DSExpr: DSAST {
 	let isAssignable: Bool
 	init(assignable: Bool = false, lineContext: LineContext?) {
 		self.isAssignable = assignable
@@ -61,7 +61,7 @@ public class DSExpr: DSAST {
 	}
 }
 
-@objc public class DSType: DSAST {
+@objc open class DSType: DSAST {
 	var identifier: String
 	var itemCount: Int?
 	
@@ -76,7 +76,7 @@ public class DSExpr: DSAST {
 		super.init(lineContext: lineContext)
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		return "DeafSharkType - type:\(identifier)"
 	}
 	
@@ -85,7 +85,7 @@ public class DSExpr: DSAST {
 	}
 }
 
-public class DSAssignment: DSAST {
+open class DSAssignment: DSAST {
 	var storage: DSExpr
 	var expression: DSExpr
 	
@@ -96,12 +96,12 @@ public class DSAssignment: DSAST {
 		self.children = [self.storage, self.expression]
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		return "DeafSharkAssignment " + self.childDescriptions
 	}
 }
 
-public class DSDeclaration: DSAST {
+open class DSDeclaration: DSAST {
 	var identifier: String
 	var isConstant: Bool
 	var type: DSType?
@@ -125,12 +125,12 @@ public class DSDeclaration: DSAST {
 		self.init(id: id, type: nil, lineContext: lineContext)
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		return "DeafSharkDeclaration - identifier:\(identifier), isConstant:\(isConstant)" + self.childDescriptions
 	}
 }
 
-public class DSBinaryExpression: DSExpr {
+open class DSBinaryExpression: DSExpr {
 	let op: String
 	let lhs: DSExpr
 	let rhs: DSExpr
@@ -143,25 +143,25 @@ public class DSBinaryExpression: DSExpr {
 		
 		switch lhs {
 		case let l as DSBinaryExpression:
-			self.children.appendContentsOf(l.children)
+			self.children.append(contentsOf: l.children)
 		default:
 			self.children.append(lhs)
 		}
 		
 		switch rhs {
 		case let r as DSBinaryExpression:
-			self.children.appendContentsOf(r.children)
+			self.children.append(contentsOf: r.children)
 		default:
 			self.children.append(rhs)
 		}
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		return "DeafSharkBinaryOperation - op:\(op)" + "\n RH\(op): " + self.lhs.description + "\n LH\(op): " + self.rhs.description
 	}
 }
 
-public class DSFunctionType: DSType {
+open class DSFunctionType: DSType {
 	var parameterType: DSType
 	var returnType: DSType
 	
@@ -171,7 +171,7 @@ public class DSFunctionType: DSType {
 		super.init(identifier: "func", itemCount: nil, lineContext: lineContext)
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		var description = "("
 		description += parameterType.description
 		description += " -> "
@@ -181,21 +181,21 @@ public class DSFunctionType: DSType {
 	}
 }
 
-public class DSFunctionParameter: DSDeclaration {}
+open class DSFunctionParameter: DSDeclaration {}
 
-public class DSFunctionBody: DSBody {
+open class DSFunctionBody: DSBody {
 	init(_ body: DSBody, lineContext: LineContext?) {
 		super.init(lineContext: lineContext)
 		self.children = body.children
 		self.lineContext = body.lineContext
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		return "DeafSharkFunctionBody" + self.childDescriptions
 	}
 }
 
-public class DSFunctionDeclaration: DSAST {
+open class DSFunctionDeclaration: DSAST {
 	var prototype: DSFunctionPrototype
 	var body: DSFunctionBody?
 	
@@ -209,12 +209,12 @@ public class DSFunctionDeclaration: DSAST {
 		}
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		return "DeafSharkFunctionDeclaration - \(self.prototype.identifier) -> \(self.prototype.type!.identifier)" + self.childDescriptions
 	}
 }
 
-public class DSFunctionPrototype: DSDeclaration {
+open class DSFunctionPrototype: DSDeclaration {
 	var parameters: [DSDeclaration]
 	
 	init(id: String, parameters: [DSDeclaration], returnType: DSType, lineContext: LineContext?) {
@@ -222,7 +222,7 @@ public class DSFunctionPrototype: DSDeclaration {
 		super.init(id: id, type: returnType, lineContext: lineContext)
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		var description = "DeafSharkFunctionPrototype - \(self.identifier)( "
 		for param in self.parameters {
 			description += param.identifier + " "
@@ -232,22 +232,22 @@ public class DSFunctionPrototype: DSDeclaration {
 	}
 }
 
-public class DSCall: DSExpr {
+open class DSCall: DSExpr {
 	let identifier: DSIdentifierString
 	
 	init(identifier: DSIdentifierString, arguments: [DSExpr]) {
 		self.identifier = identifier
 		super.init(lineContext: nil)
 		let args = arguments as [DSAST]
-		self.children.appendContentsOf(args)
+		self.children.append(contentsOf: args)
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		return "DeafSharkFunctionCall - identifier:\(identifier.name)" + self.childDescriptions
 	}
 }
 
-public class DSConditionalStatement: DSAST {
+open class DSConditionalStatement: DSAST {
 	let cond: DSExpr
 	let body: DSBody
 	
@@ -259,7 +259,7 @@ public class DSConditionalStatement: DSAST {
 	}
 }
 
-public class DSIfStatement: DSConditionalStatement {
+open class DSIfStatement: DSConditionalStatement {
 	var elseBody: DSBody?
 	var alternates: [DSIfStatement]?
 	
@@ -269,7 +269,7 @@ public class DSIfStatement: DSConditionalStatement {
 		super.init(condition: condition, body: body, lineContext: lineContext)
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		var desc = "DeafSharkIfStatement - condition:\(self.cond.description)"
 		
 		for alt in alternates! {
@@ -280,13 +280,13 @@ public class DSIfStatement: DSConditionalStatement {
 	}
 }
 
-public class DSWhileStatement: DSConditionalStatement {
-	override public var description: String {
+open class DSWhileStatement: DSConditionalStatement {
+	override open var description: String {
 		return "DeafSharkWhileStatement - condition:\(self.cond.description)" + self.body.description
 	}
 }
 
-public class DSForStatement: DSConditionalStatement {
+open class DSForStatement: DSConditionalStatement {
 	let initial: DSAST
 	let increment: DSExpr
 	
@@ -296,12 +296,12 @@ public class DSForStatement: DSConditionalStatement {
 		super.init(condition: condition, body: body, lineContext: lineContext)
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		return "DeafSharkForStatement - condition:\(self.cond.description)" + self.body.description
 	}
 }
 
-public class DSReturnStatement: DSExpr {
+open class DSReturnStatement: DSExpr {
 	let statement: DSExpr
 	
 	init (statement: DSExpr, lineContext: LineContext?) {
@@ -310,17 +310,17 @@ public class DSReturnStatement: DSExpr {
 	}
 }
 
-public class DSBreakStatement: DSExpr {
+open class DSBreakStatement: DSExpr {
 	init (lineContext: LineContext?) {
 		super.init(assignable: false, lineContext: lineContext)
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		return "DeafSharkBreakStatement - break"
 	}
 }
 
-public class DSIdentifierString: DSExpr {
+open class DSIdentifierString: DSExpr {
 	var name: String
 	var arrayAccess: DSExpr?
 	
@@ -329,66 +329,66 @@ public class DSIdentifierString: DSExpr {
 		super.init(assignable: true, lineContext: lineContext)
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		return "DeafSharkIdentifier - name:\(name) " + ((self.arrayAccess == nil) ? "" : "[" + self.arrayAccess!.description + "]")
 	}
 }
 
-public class DSStringLiteral: DSExpr {
+open class DSStringLiteral: DSExpr {
 	let val: String
 	init (val: String, lineContext: LineContext?) {
 		self.val = val
 		super.init(lineContext: lineContext)
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		return "DeafSharkStringLiteral - val:\"\(val)\""
 	}
 }
 
-public class DSSignedIntegerLiteral: DSExpr {
+open class DSSignedIntegerLiteral: DSExpr {
 	let val: Int
 	init(val: Int, lineContext: LineContext?) {
 		self.val = val
 		super.init(lineContext: lineContext)
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		return "DeafSharkSignedIntegerLiteral - val:\(val)"
 	}
 }
 
-public class DSFloatLiteral: DSExpr {
+open class DSFloatLiteral: DSExpr {
 	let val: Float
 	init(val: Float, lineContext: LineContext?) {
 		self.val = val
 		super.init(lineContext: lineContext)
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		return "DeafSharkFloatLiteral - val:\(val)"
 	}
 }
 
-public class DSBooleanLiteral: DSExpr {
+open class DSBooleanLiteral: DSExpr {
 	let val: Bool
 	init(val: Bool, lineContext: LineContext?) {
 		self.val = val
 		super.init(lineContext: lineContext)
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		return "DeafSharkBooleanLiteral - val:\(val)"
 	}
 }
 
-public class DSArrayLiteral: DSExpr {
+open class DSArrayLiteral: DSExpr {
 	init(elements: [DSExpr], lineContext: LineContext?) {
 		super.init(lineContext: lineContext)
 		self.children = elements
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		return "DeafSharkArrayLiteral" + self.childDescriptions
 	}
 }

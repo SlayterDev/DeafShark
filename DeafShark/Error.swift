@@ -12,11 +12,11 @@ public func ==(lhs: DSError, rhs: DSError) -> Bool {
 	return lhs.message == rhs.message && lhs.lineContext == rhs.lineContext
 }
 
-public class DSError: NSObject {
+open class DSError: NSObject {
 	var message: String
 	var lineContext: LineContext
 	
-	override public var description: String {
+	override open var description: String {
 		return "Error encountered at line: " + lineContext.line.description + ", pos: " + lineContext.pos.description + ": " + message
 	}
 	

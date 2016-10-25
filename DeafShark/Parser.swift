@@ -8,10 +8,10 @@
 
 import Cocoa
 
-public class DSParser {
+open class DSParser {
 	var tokens: [DeafSharkToken]
 	var lineContext: [LineContext]
-	lazy public private(set) var errors = [DSError]()
+	lazy open fileprivate(set) var errors = [DSError]()
 	
 	var binaryOperatorPrecedence: Dictionary<String, Int> = [
 		"<<":   160,
@@ -74,23 +74,23 @@ public class DSParser {
 		self.lineContext = lineContext
 	}
 	
-	func getOperatorPrecedence(op: String) -> Int {
+	func getOperatorPrecedence(_ op: String) -> Int {
 		return self.binaryOperatorPrecedence[op]!
 	}
 	
 	func consumeToken() {
-		tokens.removeAtIndex(0)
-		lineContext.removeAtIndex(0)
+		tokens.remove(at: 0)
+		lineContext.remove(at: 0)
 	}
 	
 	func generateAST() -> DSBody? {
 		return parseBody()
 	}
 	
-	func parseBody(bracesRequired: Bool = false) -> DSBody? {
+	func parseBody(_ bracesRequired: Bool = false) -> DSBody? {
 		if bracesRequired {
 			switch tokens[0] {
-			case .LeftBrace:
+			case .leftBrace:
 				consumeToken()
 			default:
 				errors.append(DSError(message: "Missing expected bracket.", lineContext: self.lineContext[0]))
@@ -102,7 +102,7 @@ public class DSParser {
 		while !tokens.isEmpty {
 			if bracesRequired {
 				switch tokens[0] {
-				case .RightBrace:
+				case .rightBrace:
 					consumeToken()
 					return body
 				default:
@@ -125,21 +125,21 @@ public class DSParser {
 	
 	func parseStatement() -> DSAST? {
 		switch tokens[0] {
-		case .VariableDeclaration:
+		case .variableDeclaration:
 			fallthrough
-		case .ConstantDeclaration:
+		case .constantDeclaration:
 			return parseDeclarationStatement()
-		case .IntegerLiteral(_):
+		case .integerLiteral(_):
 			fallthrough
-		case .FloatLiteral(_):
+		case .floatLiteral(_):
 			fallthrough
-		case .Identifier(_):
+		case .identifier(_):
 			if let lhs = parsePrimary() {
 				if tokens.count == 0 {
 					return lhs
 				}
 				switch tokens[0] {
-				case .InfixOperator("=") where lhs.isAssignable:
+				case .infixOperator("=") where lhs.isAssignable:
 					return parseAssignment(lhs)
 				default:
 					return parseOperationRHS(precedence: 0, lhs: lhs)
@@ -147,17 +147,17 @@ public class DSParser {
 			} else {
 				return nil
 			}
-		case .Function:
+		case .function:
 			return parseFunctionDeclaration()
-		case .While:
+		case .while:
 			fallthrough
-		case .For:
+		case .for:
 			fallthrough
-		case .If:
+		case .if:
 			return parseConditionalStatement()
-		case .Return:
+		case .return:
 			return parseReturnStatement()
-		case .Newline:
+		case .newline:
 			consumeToken()
 			return nil
 		default:
@@ -166,14 +166,14 @@ public class DSParser {
 		}
 	}
 	
-	func parseOperationRHS(precedence precedence: Int,  lhs: DSExpr) -> DSExpr? {
+	func parseOperationRHS(precedence: Int,  lhs: DSExpr) -> DSExpr? {
 		if tokens.count == 0 {
 			return lhs
 		}
 		
 		while tokens.count > 0 {
 		switch tokens[0] {
-			case .InfixOperator(let op):
+			case .infixOperator(let op):
 				let tokenPrecedence = getOperatorPrecedence(op)
 				
 				if tokenPrecedence < precedence {
@@ -188,7 +188,7 @@ public class DSParser {
 					}
 					
 					switch tokens[0] {
-					case .InfixOperator(let nextOp):
+					case .infixOperator(let nextOp):
 						let nextPrecedence = getOperatorPrecedence(nextOp)
 						
 						// next token is higher precedence
@@ -206,15 +206,15 @@ public class DSParser {
 				} else {
 					return nil
 				}
-			case .LeftBracket:
+			case .leftBracket:
 				consumeToken()
 				
 				var depth = 1
 				for token in tokens {
 					switch token {
-					case .RightBracket:
+					case .rightBracket:
 						depth -= 1
-					case .LeftBracket:
+					case .leftBracket:
 						depth += 1
 					default:
 						break
@@ -238,9 +238,9 @@ public class DSParser {
 		return lhs
 	}
 	
-	func parseAssignment(store: DSExpr) -> DSAssignment? {
+	func parseAssignment(_ store: DSExpr) -> DSAssignment? {
 		switch tokens[0] {
-		case .InfixOperator("="):
+		case .infixOperator("="):
 			consumeToken()
 			if let rhs = parseExpression() {
 				return DSAssignment(storage: store, expression: rhs)
@@ -256,9 +256,9 @@ public class DSParser {
 	func parseDeclarationStatement() -> DSAST? {
 		var isConstant = true
 		switch tokens[0] {
-		case .ConstantDeclaration:
+		case .constantDeclaration:
 			consumeToken()
-		case .VariableDeclaration:
+		case .variableDeclaration:
 			consumeToken()
 			isConstant = false
 		default:
@@ -274,14 +274,14 @@ public class DSParser {
 		return nil
 	}
 	
-	func parseStorageDeclaration(isFunctionParameter: Bool = false) -> DSDeclaration? {
+	func parseStorageDeclaration(_ isFunctionParameter: Bool = false) -> DSDeclaration? {
 		var type: DSType?
 		let context = self.lineContext[0]
 		if let declarationID = parseDeclaration() {
 			let declaration = isFunctionParameter ? DSFunctionParameter(id: declarationID, lineContext: context) : DSDeclaration(id: declarationID, lineContext: context)
 			if tokens.count > 0 {
 				switch tokens[0] {
-				case .As:
+				case .as:
 					consumeToken()
 					type = parseType()
 					if type == nil {
@@ -296,7 +296,7 @@ public class DSParser {
 			
 			if tokens.count > 0 {
 				switch tokens[0] {
-				case .InfixOperator("="):
+				case .infixOperator("="):
 					consumeToken()
 					if let assignment = parseExpression() {
 						declaration.assignment = assignment
@@ -324,7 +324,7 @@ public class DSParser {
 		var isArray = false
 		while tokens.count > 0 {
 			switch tokens[0] {
-			case .Identifier(var t):
+			case .identifier(var t):
 				let context = self.lineContext[0]
 				consumeToken()
 				
@@ -332,12 +332,12 @@ public class DSParser {
 				if isArray {
 					t = "Array," + t
 					switch tokens[0] {
-					case .InfixOperator(let op):
+					case .infixOperator(let op):
 						if op == "*" {
 							consumeToken()
 							
 							switch tokens[0] {
-							case .IntegerLiteral(let n):
+							case .integerLiteral(let n):
 								consumeToken()
 								itemCount = n
 							default:
@@ -350,7 +350,7 @@ public class DSParser {
 					}
 					
 					switch tokens[0] {
-					case .ArrayRight:
+					case .arrayRight:
 						consumeToken()
 					default:
 						errors.append(DSError(message: "Expexted ']' in type declaration.", lineContext: self.lineContext[0]))
@@ -358,7 +358,7 @@ public class DSParser {
 				}
 				
 				return DSType(identifier: t, itemCount: itemCount, lineContext: context)
-			case .ArrayLeft:
+			case .arrayLeft:
 				consumeToken()
 				isArray = true
 			//TODO: void/tuples
@@ -372,7 +372,7 @@ public class DSParser {
 	
 	func parseDeclaration() -> String? {
 		switch tokens[0] {
-		case .Identifier(let string):
+		case .identifier(let string):
 			consumeToken()
 			return string
 		default:
@@ -401,14 +401,14 @@ public class DSParser {
 	
 	func parseConditionalStatement() -> DSConditionalStatement? {
 		let context = self.lineContext[0]
-		var token: DeafSharkToken = .If
+		var token: DeafSharkToken = .if
 		switch tokens[0] {
-		case .For:
+		case .for:
 			consumeToken()
 			return parseForStatement()
-		case .If:
+		case .if:
 			fallthrough
-		case .While:
+		case .while:
 			token = tokens[0]
 			consumeToken()
 		default:
@@ -417,19 +417,19 @@ public class DSParser {
 		
 		if let cond = parseExpression(), let body = parseBody(true) {
 			switch token {
-			case .While:
+			case .while:
 				return DSWhileStatement(condition: cond, body: body, lineContext: context)
-			case .If:
+			case .if:
 				let ifstat = DSIfStatement(condition: cond, body: body, lineContext: context)
 				while tokens.count > 0 {
 					var breakLoop = false
 					switch tokens[0] {
-					case .Else:
+					case .else:
 						consumeToken()
 						
 						// Check for else if
 						switch tokens[0] {
-						case .LeftBrace:
+						case .leftBrace:
 							if let elseBody = parseBody(true) {
 								ifstat.elseBody = elseBody
 								return ifstat
@@ -437,7 +437,7 @@ public class DSParser {
 								errors.append(DSError(message: "Missing expected 'else' body.", lineContext: self.lineContext[0]))
 								return nil
 							}
-						case .If:
+						case .if:
 							consumeToken()
 							if let elifCond = parseExpression(), let elifBody = parseBody(true) {
 								ifstat.alternates?.append(DSIfStatement(condition: elifCond, body: elifBody, lineContext: self.lineContext[0]))
@@ -469,11 +469,11 @@ public class DSParser {
 	func parseForStatement() -> DSForStatement? {
 		let initial: DSAST
 		switch tokens[0] {
-		case .VariableDeclaration:
+		case .variableDeclaration:
 			fallthrough
-		case .ConstantDeclaration:
+		case .constantDeclaration:
 			fallthrough
-		case .Identifier(_):
+		case .identifier(_):
 			initial = parseStatement()!
 		default:
 			errors.append(DSError(message: "invalid for loop initialization", lineContext: self.lineContext[0]))
@@ -481,7 +481,7 @@ public class DSParser {
 		}
 		
 		switch tokens[0] {
-		case .Semicolon:
+		case .semicolon:
 			consumeToken()
 		default:
 			errors.append(DSError(message: "Missing expected semicolon.", lineContext: self.lineContext[0]))
@@ -490,7 +490,7 @@ public class DSParser {
 		let condition = parseExpression()
 		
 		switch tokens[0] {
-		case .Semicolon:
+		case .semicolon:
 			consumeToken()
 		default:
 			errors.append(DSError(message: "Missing expected semicolon.", lineContext: self.lineContext[0]))
@@ -499,7 +499,7 @@ public class DSParser {
 		let increment = parseExpression()
 		
 		switch tokens[0] {
-		case .Semicolon:
+		case .semicolon:
 			consumeToken()
 		default:
 			break
@@ -517,19 +517,19 @@ public class DSParser {
 	func parsePrimary() -> DSExpr? {
 		let context = self.lineContext[0]
 		switch tokens[0] {
-		case .Identifier(_):
+		case .identifier(_):
 			return parseIdentifierExpression()
-		case .IntegerLiteral(_):
+		case .integerLiteral(_):
 			fallthrough
-		case .FloatLiteral(_):
+		case .floatLiteral(_):
 			return parseNumberExpression()
-		case .BooleanLiteral(let bool):
+		case .booleanLiteral(let bool):
 			consumeToken()
 			return DSBooleanLiteral(val: bool, lineContext: context)
-		case .StringLiteral(let string):
+		case .stringLiteral(let string):
 			consumeToken()
 			return DSStringLiteral(val: string, lineContext: context)
-		case .ArrayLeft:
+		case .arrayLeft:
 			return parseArray()
 		default:
 			errors.append(DSError(message: "\(tokens[0]) is not a DeafShark expression.", lineContext: context))
@@ -540,7 +540,7 @@ public class DSParser {
 	func parseFunctionDeclaration() -> DSFunctionDeclaration? {
 		let context = self.lineContext[0]
 		switch tokens[0] {
-		case .Function:
+		case .function:
 			consumeToken()
 		default:
 			errors.append(DSError(message: "Missing expected 'func'.", lineContext: context))
@@ -549,7 +549,7 @@ public class DSParser {
 		
 		let functionId: String
 		switch tokens[0] {
-		case .Identifier(let string):
+		case .identifier(let string):
 			functionId = string
 			consumeToken()
 		default:
@@ -558,7 +558,7 @@ public class DSParser {
 		}
 		
 		switch tokens[0] {
-		case .LeftBracket:
+		case .leftBracket:
 			consumeToken()
 		default:
 			errors.append(DSError(message: "Missing expected '('.", lineContext: context))
@@ -570,7 +570,7 @@ public class DSParser {
 		
 		let returnTypeContext = self.lineContext[0]
 		switch tokens[0] {
-		case .Arrow:
+		case .arrow:
 			consumeToken()
 			if let type = parseType() {
 				returnType = type
@@ -588,7 +588,7 @@ public class DSParser {
 		}
 		let bodyContext = self.lineContext[0]
 		switch tokens[0] {
-		case .LeftBrace:
+		case .leftBrace:
 			if let closure = parseBody(true) {
 				body = DSFunctionBody(closure, lineContext: bodyContext)
 				fallthrough
@@ -605,10 +605,10 @@ public class DSParser {
 		
 		while true {
 			switch tokens[0] {
-			case .RightBracket:
+			case .rightBracket:
 				consumeToken()
 				return functionParameters
-			case .Comma:
+			case .comma:
 				consumeToken()
 			default:
 				if let arg = parseStorageDeclaration(true) as? DSFunctionParameter {
@@ -623,10 +623,10 @@ public class DSParser {
 	func parseNumberExpression() -> DSExpr? {
 		let context = self.lineContext[0]
 		switch tokens[0] {
-		case .IntegerLiteral(let int):
+		case .integerLiteral(let int):
 			consumeToken()
 			return DSSignedIntegerLiteral(val: int, lineContext: context)
-		case .FloatLiteral(let float):
+		case .floatLiteral(let float):
 			consumeToken()
 			return DSFloatLiteral(val: float, lineContext: context)
 		default:
@@ -639,7 +639,7 @@ public class DSParser {
 		let context = self.lineContext[0]
 		var identifier: DSIdentifierString!
 		switch tokens[0] {
-		case .Identifier(let id):
+		case .identifier(let id):
 			consumeToken()
 			
 			if id == "break" {
@@ -648,14 +648,14 @@ public class DSParser {
 			
 			identifier =  DSIdentifierString(name: id, lineContext: context)
 			switch tokens[0] {
-			case .ArrayLeft:
+			case .arrayLeft:
 				consumeToken()
 				if let expr = parseExpression() {
 					identifier.arrayAccess = expr
 				}
 				// May not be needed
 				switch tokens[0] {
-				case .ArrayRight:
+				case .arrayRight:
 					consumeToken()
 				default:
 					errors.append(DSError(message: "Expected ']'", lineContext: self.lineContext[0]))
@@ -673,7 +673,7 @@ public class DSParser {
 			return identifier
 		}
 		switch tokens[0] {
-		case .LeftBracket:
+		case .leftBracket:
 			consumeToken()
 			var args = [DSExpr]()
 			while true {
@@ -682,10 +682,10 @@ public class DSParser {
 					return nil
 				}
 				switch tokens[0] {
-				case .RightBracket:
+				case .rightBracket:
 					consumeToken()
 					return DSCall(identifier: identifier, arguments: args)
-				case .Comma:
+				case .comma:
 					consumeToken()
 				default:
 					if let exp = parseExpression() {
@@ -706,9 +706,9 @@ public class DSParser {
 		var elements = [DSExpr]()
 		while tokens.count > 0 {
 			switch tokens[0] {
-			case .Comma:
+			case .comma:
 				consumeToken()
-			case .ArrayRight:
+			case .arrayRight:
 				consumeToken()
 				return DSArrayLiteral(elements: elements, lineContext: self.lineContext[0])
 			default:

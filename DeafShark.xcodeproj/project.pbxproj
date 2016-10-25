@@ -16,10 +16,11 @@
 		021862001B30636600D0ED84 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021861FF1B30636600D0ED84 /* Parser.swift */; };
 		025459041B5B55F10051770D /* StandardLibrary.mm in Sources */ = {isa = PBXBuildFile; fileRef = 025459031B5B55F10051770D /* StandardLibrary.mm */; };
 		027447AD1B4571EC009EA56A /* OutputUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = 027447AC1B4571EC009EA56A /* OutputUtils.mm */; };
-		027447B31B459D97009EA56A /* compileandlink.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 027447AE1B4598D5009EA56A /* compileandlink.sh */; };
 		02EC96B71B42DC9A00D3D7E1 /* CompilerHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02EC96B61B42DC9A00D3D7E1 /* CompilerHelper.swift */; };
 		02EC96BA1B42E5EE00D3D7E1 /* LLVMHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02EC96B91B42E5EE00D3D7E1 /* LLVMHelper.mm */; };
 		02EC96BC1B42E7F800D3D7E1 /* Codegen.mm in Sources */ = {isa = PBXBuildFile; fileRef = 02EC96BB1B42E7F800D3D7E1 /* Codegen.mm */; };
+		41018A381DBF910600792D80 /* compileandlink.sh in Resources */ = {isa = PBXBuildFile; fileRef = 41018A371DBF910600792D80 /* compileandlink.sh */; };
+		41018A391DBF910C00792D80 /* compileandlink.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 41018A371DBF910600792D80 /* compileandlink.sh */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -29,7 +30,7 @@
 			dstPath = usr/local/DeafShark;
 			dstSubfolderSpec = 0;
 			files = (
-				027447B31B459D97009EA56A /* compileandlink.sh in CopyFiles */,
+				41018A391DBF910C00792D80 /* compileandlink.sh in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -48,7 +49,6 @@
 		025459031B5B55F10051770D /* StandardLibrary.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = StandardLibrary.mm; sourceTree = "<group>"; };
 		027447AB1B4571EC009EA56A /* OutputUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OutputUtils.h; sourceTree = "<group>"; };
 		027447AC1B4571EC009EA56A /* OutputUtils.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = OutputUtils.mm; sourceTree = "<group>"; };
-		027447AE1B4598D5009EA56A /* compileandlink.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = compileandlink.sh; path = /Users/Slayter/Xcode/Mac/DeafShark/DeafShark/compileandlink.sh; sourceTree = "<absolute>"; };
 		02B4A8D41B384C23006C3669 /* DeafShark-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DeafShark-Bridging-Header.h"; sourceTree = "<group>"; };
 		02B4A8D71B39A2CC006C3669 /* Codegen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Codegen.h; sourceTree = "<group>"; };
 		02EC96B61B42DC9A00D3D7E1 /* CompilerHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompilerHelper.swift; sourceTree = "<group>"; };
@@ -56,6 +56,7 @@
 		02EC96B91B42E5EE00D3D7E1 /* LLVMHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LLVMHelper.mm; sourceTree = "<group>"; };
 		02EC96BB1B42E7F800D3D7E1 /* Codegen.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Codegen.mm; sourceTree = "<group>"; };
 		02F8590C1B4D747B008D6D00 /* Codegen_NonSwift.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Codegen_NonSwift.h; sourceTree = "<group>"; };
+		41018A371DBF910600792D80 /* compileandlink.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = compileandlink.sh; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,7 +101,7 @@
 		02EC96BD1B42EBBB00D3D7E1 /* Compiler */ = {
 			isa = PBXGroup;
 			children = (
-				027447AE1B4598D5009EA56A /* compileandlink.sh */,
+				41018A371DBF910600792D80 /* compileandlink.sh */,
 				02EC96B61B42DC9A00D3D7E1 /* CompilerHelper.swift */,
 				02F8590C1B4D747B008D6D00 /* Codegen_NonSwift.h */,
 				02B4A8D71B39A2CC006C3669 /* Codegen.h */,
@@ -172,11 +173,12 @@
 			attributes = {
 				LastSwiftMigration = 0710;
 				LastSwiftUpdateCheck = 0710;
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = "Flipped Bit";
 				TargetAttributes = {
 					021861EA1B2F544E00D0ED84 = {
 						CreatedOnToolsVersion = 7.0;
+						LastSwiftMigration = 0800;
 					};
 				};
 			};
@@ -202,6 +204,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				41018A381DBF910600792D80 /* compileandlink.sh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -243,8 +246,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
@@ -289,8 +294,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
@@ -308,14 +315,15 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
 			name = Release;
 		};
 		021861F31B2F544F00D0ED84 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				DEFINES_MODULE = YES;
-				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -352,6 +360,7 @@
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "DeafShark/DeafShark-Bridging-Header.h";
+				SWIFT_VERSION = 3.0;
 				USER_HEADER_SEARCH_PATHS = "/usr/local/include/**";
 			};
 			name = Debug;
@@ -359,8 +368,8 @@
 		021861F41B2F544F00D0ED84 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				DEFINES_MODULE = YES;
-				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					__STDC_CONSTANT_MACROS,
 					__STDC_FORMAT_MACROS,
@@ -394,6 +403,7 @@
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "DeafShark/DeafShark-Bridging-Header.h";
+				SWIFT_VERSION = 3.0;
 				USER_HEADER_SEARCH_PATHS = "/usr/local/include/**";
 			};
 			name = Release;

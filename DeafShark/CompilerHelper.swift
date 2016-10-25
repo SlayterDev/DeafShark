@@ -21,7 +21,7 @@ import Cocoa
 		return self.printCallArgs
 	}
 	
-	func formatForType(type: String, arrayAccess: Bool) -> String {
+	func formatForType(_ type: String, arrayAccess: Bool) -> String {
 		switch (type) {
 		case "Int":
 			return "%d"
@@ -34,7 +34,7 @@ import Cocoa
 		}
 	}
 	
-	func getPrintFormatString(call: DSCall, newline: Bool) -> NSString {
+	func getPrintFormatString(_ call: DSCall, newline: Bool) -> NSString {
 		let args = call.children
 		printCallArgs = [DSAST]()
 		
@@ -54,12 +54,12 @@ import Cocoa
 				format += binExpForm
 				printCallArgs += binExpArgs
 			case let expr as DSIdentifierString:
-				let type = Codegen.typeForIdentifier(expr)
-				format += formatForType(type, arrayAccess: (expr.arrayAccess != nil) ? true : false)
+				let type = Codegen.type(forIdentifier: expr)
+				format += formatForType(type!, arrayAccess: (expr.arrayAccess != nil) ? true : false)
 				printCallArgs.append(expr)
 			case let expr as DSCall:
-				let type = Codegen.typeForFunction(expr)
-				format += formatForType(type, arrayAccess: false)
+				let type = Codegen.type(forFunction: expr)
+				format += formatForType(type!, arrayAccess: false)
 				printCallArgs.append(expr)
 			default:
 				break
@@ -73,7 +73,7 @@ import Cocoa
 		return format as NSString
 	}
 	
-	func binaryExprFormat(expr: DSBinaryExpression) -> (String, [DSAST]) {
+	func binaryExprFormat(_ expr: DSBinaryExpression) -> (String, [DSAST]) {
 		var args = [DSAST]()
 		
 		var lhsFormat = ""
@@ -90,12 +90,12 @@ import Cocoa
 			lhsFormat += binExpFormat
 			args += binExpArgs
 		case let expr as DSIdentifierString:
-			let type = Codegen.typeForIdentifier(expr)
-			lhsFormat += formatForType(type, arrayAccess: (expr.arrayAccess != nil) ? true : false)
+			let type = Codegen.type(forIdentifier: expr)
+			lhsFormat += formatForType(type!, arrayAccess: (expr.arrayAccess != nil) ? true : false)
 			args.append(expr)
 		case let expr as DSCall:
-			let type = Codegen.typeForFunction(expr)
-			lhsFormat += formatForType(type, arrayAccess: false)
+			let type = Codegen.type(forFunction: expr)
+			lhsFormat += formatForType(type!, arrayAccess: false)
 			printCallArgs.append(expr)
 		default:
 			lhsFormat += ""
@@ -115,12 +115,12 @@ import Cocoa
 			rhsFormat += binExpFormat
 			args += binExpArgs
 		case let expr as DSIdentifierString:
-			let type = Codegen.typeForIdentifier(expr)
-			rhsFormat += formatForType(type, arrayAccess: (expr.arrayAccess != nil) ? true : false)
+			let type = Codegen.type(forIdentifier: expr)
+			rhsFormat += formatForType(type!, arrayAccess: (expr.arrayAccess != nil) ? true : false)
 			args.append(expr)
 		case let expr as DSCall:
-			let type = Codegen.typeForFunction(expr)
-			rhsFormat += formatForType(type, arrayAccess: false)
+			let type = Codegen.type(forFunction: expr)
+			rhsFormat += formatForType(type!, arrayAccess: false)
 			printCallArgs.append(expr)
 		default:
 			rhsFormat += ""
@@ -129,7 +129,7 @@ import Cocoa
 		return ((lhsFormat + rhsFormat), args)
 	}
 	
-	func isValidBinaryAssignment(expr: DSBinaryExpression) -> Bool {
+	func isValidBinaryAssignment(_ expr: DSBinaryExpression) -> Bool {
 		switch expr.op {
 		case "+=":
 			fallthrough
@@ -149,7 +149,7 @@ import Cocoa
 		return nsInputFile.lastPathComponent
 	}
 	
-	func getArrayTypeString(expr: DSArrayLiteral) -> String? {
+	func getArrayTypeString(_ expr: DSArrayLiteral) -> String? {
 		switch expr.children[0] {
 		case _ as DSBinaryExpression:
 			fallthrough

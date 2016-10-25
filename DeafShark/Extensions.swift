@@ -8,43 +8,43 @@
 
 import Foundation
 
-prefix operator / {}
+prefix operator /
 
 prefix func /(regex: String) -> NSRegularExpression {
-	return try! NSRegularExpression(pattern: regex, options: NSRegularExpressionOptions())
+	return try! NSRegularExpression(pattern: regex, options: NSRegularExpression.Options())
 }
 
 func /(lhs: NSRegularExpression, rhs: String) -> NSRegularExpression {
 	let pattern = lhs.pattern
 	var optionsMask: UInt = 0
 	
-	rhs.match(/"i") { (groups: [String]) -> () in
-		optionsMask |= NSRegularExpressionOptions.CaseInsensitive.rawValue
+	let _ = rhs.match(/"i") { (groups: [String]) -> () in
+		optionsMask |= NSRegularExpression.Options.caseInsensitive.rawValue
 	}
-	rhs.match(/"x") { (groups: [String]) -> () in
-		optionsMask |= NSRegularExpressionOptions.AllowCommentsAndWhitespace.rawValue
+	let _ = rhs.match(/"x") { (groups: [String]) -> () in
+		optionsMask |= NSRegularExpression.Options.allowCommentsAndWhitespace.rawValue
 	}
-	rhs.match(/"q") { (groups: [String]) -> () in
-		optionsMask |= NSRegularExpressionOptions.IgnoreMetacharacters.rawValue
+	let _ = rhs.match(/"q") { (groups: [String]) -> () in
+		optionsMask |= NSRegularExpression.Options.ignoreMetacharacters.rawValue
 	}
-	rhs.match(/"s") { (groups: [String]) -> () in
-		optionsMask |= NSRegularExpressionOptions.DotMatchesLineSeparators.rawValue
+	let _ = rhs.match(/"s") { (groups: [String]) -> () in
+		optionsMask |= NSRegularExpression.Options.dotMatchesLineSeparators.rawValue
 	}
-	rhs.match(/"m") { (groups: [String]) -> () in
-		optionsMask |= NSRegularExpressionOptions.AnchorsMatchLines.rawValue
+	let _ = rhs.match(/"m") { (groups: [String]) -> () in
+		optionsMask |= NSRegularExpression.Options.anchorsMatchLines.rawValue
 	}
-	rhs.match(/"w") { (groups: [String]) -> () in
-		optionsMask |= NSRegularExpressionOptions.UseUnicodeWordBoundaries.rawValue
+	let _ = rhs.match(/"w") { (groups: [String]) -> () in
+		optionsMask |= NSRegularExpression.Options.useUnicodeWordBoundaries.rawValue
 	}
-	rhs.match(/"d") { (groups: [String]) -> () in
-		optionsMask |= NSRegularExpressionOptions.UseUnixLineSeparators.rawValue
+	let _ = rhs.match(/"d") { (groups: [String]) -> () in
+		optionsMask |= NSRegularExpression.Options.useUnixLineSeparators.rawValue
 	}
-	return try! NSRegularExpression(pattern: pattern, options: NSRegularExpressionOptions(rawValue: optionsMask))
+	return try! NSRegularExpression(pattern: pattern, options: NSRegularExpression.Options(rawValue: optionsMask))
 }
 
 func ~=(string: String, regex: NSRegularExpression) -> Bool {
 	let range = NSMakeRange(0, string.characters.count)
-	let match = regex.firstMatchInString(string, options: NSMatchingOptions(), range: range)
+	let match = regex.firstMatch(in: string, options: NSRegularExpression.MatchingOptions(), range: range)
 	return match != nil
 }
 
@@ -53,22 +53,22 @@ extension String {
 		return NSMakeRange(0, self.characters.count)
 	}
 	
-	func match(regex: NSRegularExpression, closure: (matches: [String]) -> ()) -> String? {
-		if let match = regex.firstMatchInString(self, options: NSMatchingOptions(), range: self.range()) {
+	func match(_ regex: NSRegularExpression, closure: (_ matches: [String]) -> ()) -> String? {
+		if let match = regex.firstMatch(in: self, options: NSRegularExpression.MatchingOptions(), range: self.range()) {
 			var groups: [String] = []
 			for index in 0..<match.numberOfRanges {
-				let rangeAtIndex: NSRange = match.rangeAtIndex(index)
+				let rangeAtIndex: NSRange = match.rangeAt(index)
 				let myString = self as NSString
 				var group: String!
 				if rangeAtIndex.location != NSNotFound {
-					group = myString.substringWithRange(rangeAtIndex)
+					group = myString.substring(with: rangeAtIndex)
 				} else {
 					group = ""
 				}
 				groups.append(group)
 			}
 			
-			closure(matches: groups)
+			closure(groups)
 			return nil
 		} else {
 			return self
@@ -85,7 +85,7 @@ extension String {
 	}
 	
 	subscript (i: Int) -> Character {
-		return self[self.startIndex.advancedBy(i)]
+		return self[self.characters.index(self.startIndex, offsetBy: i)]
 	}
 	
 	subscript (i: Int) -> String {
@@ -93,7 +93,7 @@ extension String {
 	}
 	
 	subscript (r: Range<Int>) -> String {
-		return substringWithRange(startIndex.advancedBy(r.startIndex)..<startIndex.advancedBy(r.endIndex))
+		return substring(with: characters.index(startIndex, offsetBy: r.lowerBound)..<characters.index(startIndex, offsetBy: r.upperBound))
 	}
 }
 
@@ -114,11 +114,11 @@ extension DeafSharkLexicalRepresentation {
 extension NSString {
 	func restoreEscapeCharacters() -> NSString {
 		var temp = self
-		temp = temp.stringByReplacingOccurrencesOfString("\\n", withString: "\n")
-		temp = temp.stringByReplacingOccurrencesOfString("\\\"", withString: "\"")
-		temp = temp.stringByReplacingOccurrencesOfString("\\\'", withString: "\'")
-		temp = temp.stringByReplacingOccurrencesOfString("\\r", withString: "\r")
-		temp = temp.stringByReplacingOccurrencesOfString("\\t", withString: "\t")
+		temp = temp.replacingOccurrences(of: "\\n", with: "\n") as NSString
+		temp = temp.replacingOccurrences(of: "\\\"", with: "\"") as NSString
+		temp = temp.replacingOccurrences(of: "\\\'", with: "\'") as NSString
+		temp = temp.replacingOccurrences(of: "\\r", with: "\r") as NSString
+		temp = temp.replacingOccurrences(of: "\\t", with: "\t") as NSString
 		return temp
 	}
 }

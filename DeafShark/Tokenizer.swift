@@ -8,16 +8,16 @@
 
 import Cocoa
 
-@objc public class LineContext: NSObject {
-	public var pos: Int
-	public var line: Int
+@objc open class LineContext: NSObject {
+	open var pos: Int
+	open var line: Int
 	
 	init(pos: Int, line: Int) {
 		self.pos = pos
 		self.line = line
 	}
 	
-	override public var description: String {
+	override open var description: String {
 		return "line: \(self.line) pos: \(self.pos)"
 	}
 }
@@ -37,7 +37,7 @@ class DeafSharkLexicalRepresentation: CustomStringConvertible {
 	
 	var description: String {
 		let tokenDescriptions = tokens.map({"\"" + $0.description + "\"" + " "})
-		let description = tokenDescriptions.reduce("", combine: { (description, token) -> String in
+		let description = tokenDescriptions.reduce("", { (description, token) -> String in
 			description + token
 		})
 		return description

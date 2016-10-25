@@ -9,87 +9,87 @@
 import Foundation
 
 enum DeafSharkToken: CustomStringConvertible, Equatable {
-	case Invalid(String)
+	case invalid(String)
 	
-	case Function
+	case function
 	
-	case LeftBracket, LeftBrace, RightBracket, RightBrace, ArrayLeft, ArrayRight
-	case Arrow, Semicolon, Comma
+	case leftBracket, leftBrace, rightBracket, rightBrace, arrayLeft, arrayRight
+	case arrow, semicolon, comma
 	
-	case While, For, If, Return, Else
+	case `while`, `for`, `if`, `return`, `else`
 	
-	case IntegerLiteral(Int), FloatLiteral(Float), StringLiteral(String), BooleanLiteral(Bool)
+	case integerLiteral(Int), floatLiteral(Float), stringLiteral(String), booleanLiteral(Bool)
 	
-	case VariableDeclaration, ConstantDeclaration
+	case variableDeclaration, constantDeclaration
 	
-	case Identifier(String), As
+	case identifier(String), `as`
 	
-	case PrefixOperator(String), InfixOperator(String), PostfixOperator(String)
+	case prefixOperator(String), infixOperator(String), postfixOperator(String)
 	
-	case Newline
+	case newline
 	
 	var description: String {
 		switch self {
-		case .Invalid(let string):
+		case .invalid(let string):
 			return "Invalid token \(string)"
-		case .Function:
+		case .function:
 			return "func"
-		case .LeftBracket:
+		case .leftBracket:
 			return "("
-		case .LeftBrace:
+		case .leftBrace:
 			return "{"
-		case .RightBracket:
+		case .rightBracket:
 			return ")"
-		case .RightBrace:
+		case .rightBrace:
 			return "}"
-		case .IntegerLiteral(let val):
+		case .integerLiteral(let val):
 			return val.description
-		case .FloatLiteral(let float):
+		case .floatLiteral(let float):
 			return float.description
-		case .StringLiteral(let string):
+		case .stringLiteral(let string):
 			return string
-		case .Identifier(let string):
+		case .identifier(let string):
 			return string
-		case .VariableDeclaration:
+		case .variableDeclaration:
 			return "var"
-		case .ConstantDeclaration:
+		case .constantDeclaration:
 			return "let"
-		case .PrefixOperator(let string):
+		case .prefixOperator(let string):
 			return string
-		case .PostfixOperator(let string):
+		case .postfixOperator(let string):
 			return string
-		case .InfixOperator(let string):
+		case .infixOperator(let string):
 			return string
-		case .Newline:
+		case .newline:
 			return "\n"
-		case .As:
+		case .as:
 			return "as"
-		case .Arrow:
+		case .arrow:
 			return "->"
-		case .Semicolon:
+		case .semicolon:
 			return ";"
-		case .Comma:
+		case .comma:
 			return ","
-		case .BooleanLiteral(let bool):
+		case .booleanLiteral(let bool):
 			return "\(bool)"
-		case .While:
+		case .while:
 			return "while"
-		case .If:
+		case .if:
 			return "if"
-		case .Else:
+		case .else:
 			return "else"
-		case .Return:
+		case .return:
 			return "return"
-		case .For:
+		case .for:
 			return "for"
-		case .ArrayLeft:
+		case .arrayLeft:
 			return "["
-		case .ArrayRight:
+		case .arrayRight:
 			return "]"
 		}
 	}
 	
-	static func tokenize(inputString: String) -> (DeafSharkLexicalRepresentation, [DSError]?) {
+	static func tokenize(_ inputString: String) -> (DeafSharkLexicalRepresentation, [DSError]?) {
 		var errors = [DSError]()
 		var input = inputString
 		
@@ -104,16 +104,16 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			let cachedLinePos = linepos
 			let cachedLine = line
 			
-			input
+			let _ = input
 			// Match float literal
 			.match(/"^(-)?[0-9]*\\.[0-9]+"/"i") {
 				let num = $0[0] as NSString
-				tokens.append(.FloatLiteral(num.floatValue))
+				tokens.append(.floatLiteral(num.floatValue))
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 				
 				if Array(arrayLiteral: input)[$0[0].characters.count] == "-" {
-					tokens.append(.InfixOperator(Array(arrayLiteral: input)[$0[0].characters.count]))
+					tokens.append(.infixOperator(Array(arrayLiteral: input)[$0[0].characters.count]))
 					context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 					linepos += 1
 				}
@@ -121,12 +121,12 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			// Match an Int literal
 			.match(/"^(-)?[0-9]+"/"i") {
 				let num = strtol($0[0], nil, 10)
-				tokens.append(.IntegerLiteral(num))
+				tokens.append(.integerLiteral(num))
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 				
 				if input[$0[0].characters.count] == "-" {
-					tokens.append(.InfixOperator("-"))
+					tokens.append(.infixOperator("-"))
 					context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 					linepos += 1
 				}
@@ -136,67 +136,67 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			
 			// Match var decl
 			.match(/"^var(?!\(identifierRegex))") {
-				tokens.append(.VariableDeclaration)
+				tokens.append(.variableDeclaration)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
 			// Match let decl
 			.match(/"^let(?!\(identifierRegex))") {
-				tokens.append(.ConstantDeclaration)
+				tokens.append(.constantDeclaration)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
 			// Match if statement
 			.match(/"^if(?!\(identifierRegex))") {
-				tokens.append(.If)
+				tokens.append(.if)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
 			// Match else statement
 			.match(/"^else") {
-				tokens.append(.Else)
+				tokens.append(.else)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
 			// Match while
 			.match(/"^while(?!\(identifierRegex))") {
-				tokens.append(.While)
+				tokens.append(.while)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
 			// Match for
 			.match(/"^for(?!\(identifierRegex))") {
-				tokens.append(.For)
+				tokens.append(.for)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
 			// Match let decl
 			.match(/"^return(?!\(identifierRegex))") {
-				tokens.append(.Return)
+				tokens.append(.return)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
 			// Match func decl
 			.match(/"^func(?!\(identifierRegex))") {
-				tokens.append(.Function)
+				tokens.append(.function)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
 			// as keyword
 			.match(/"^as") {
-				tokens.append(.As)
+				tokens.append(.as)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
 			// true keyword
 			.match(/"^(true|YES)") {
-				tokens.append(.BooleanLiteral(true))
+				tokens.append(.booleanLiteral(true))
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
 			// false keyword
 			.match(/"^(false|NO)") {
-				tokens.append(.BooleanLiteral(false))
+				tokens.append(.booleanLiteral(false))
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
@@ -207,33 +207,36 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 				var newLinePos = cachedLinePos
 				if !$0[1].isEmpty {
 					// tokenize prefix
-					tokens.append(.PrefixOperator($0[1]))
+					tokens.append(.prefixOperator($0[1]))
 					context.append(LineContext(pos: newLinePos, line: cachedLine))
 					newLinePos += $0[1].characters.count
 				}
 				// tokenize identifier
-				tokens.append(.Identifier($0[2]))
+				tokens.append(.identifier($0[2]))
 				context.append(LineContext(pos: newLinePos, line: cachedLine))
 				newLinePos += $0[2].characters.count
 				if !$0[3].isEmpty {
 					// tokenize postfix
-					tokens.append(.PostfixOperator($0[3]))
+					tokens.append(.postfixOperator($0[3]))
 					context.append(LineContext(pos: newLinePos, line: cachedLine))
 				}
 				linepos += $0[0].characters.count
 				
 				if input[$0[0].characters.count] == "-" {
-					tokens.append(.InfixOperator("-"))
+					tokens.append(.infixOperator("-"))
 					context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 					linepos += 1
 				}
 			}?
 			// match string literals
 			.match(/"^\"(\\.|[^\"])*\"") {
-				var string = $0[0] as NSString
-				string = string.substringWithRange(NSMakeRange(1, $0[0].characters.count-2))
+				var string = $0[0]
+                let index = string.index(after: string.startIndex)
+                let end = string.index(index, offsetBy: string.characters.count - 2)
+                let range = index..<end
+				string = string.substring(with: range)
 				
-				tokens.append(.StringLiteral(string as String))
+				tokens.append(.stringLiteral(string as String))
 				
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count // Plus two for the quotes
@@ -254,19 +257,19 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 				
 			// return type arrow
 			.match(/"^->") {
-				tokens.append(.Arrow)
+				tokens.append(.arrow)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
 			// infix operators
 			.match(/"^[\\+\\-/*<>=%](=)?") {
-				tokens.append(.InfixOperator($0[0]))
+				tokens.append(.infixOperator($0[0]))
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
 			// comma
 			.match(/"^,") {
-				tokens.append(.Comma)
+				tokens.append(.comma)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
@@ -275,51 +278,51 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			
 			// left bracket `(`
 			.match(/"^\\(") {
-				tokens.append(.LeftBracket)
+				tokens.append(.leftBracket)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
 			// left brace `{`
 			.match(/"^\\{") {
-				tokens.append(.LeftBrace)
+				tokens.append(.leftBrace)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
 			// right bracket `)`
 			.match(/"^\\)") {
-				tokens.append(.RightBracket)
+				tokens.append(.rightBracket)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
 			// right brace `}`
 			.match(/"^\\}") {
-				tokens.append(.RightBrace)
+				tokens.append(.rightBrace)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
 			// right brace `}`
 			.match(/"^\\[") {
-				tokens.append(.ArrayLeft)
+				tokens.append(.arrayLeft)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
 			// right brace `}`
 			.match(/"^\\]") {
-				tokens.append(.ArrayRight)
+				tokens.append(.arrayRight)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
 			
 			// semicolon
 			.match(/"^(;)+") {
-				tokens.append(.Semicolon)
+				tokens.append(.semicolon)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0[0].characters.count
 			}?
 			
 			// newline
 			.match(/"^(\\n)+") {
-				tokens.append(.Newline)
+				tokens.append(.newline)
 				context.append(LineContext(pos: cachedLinePos, line: cachedLine))
 				linepos += $0.count - 1
 				line += $0.count - 1
@@ -332,20 +335,20 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 			
 			// everything else is an error
 			.match(/"^.*") {
-				tokens.append(.Invalid($0[0]))
+				tokens.append(.invalid($0[0]))
 				context.append(LineContext(pos: linepos, line: line))
 				errors.append(DSError(message: "Invalid syntax \($0[0]) encountered", lineContext: LineContext(pos: linepos, line: line)))
 				linepos += $0[0].characters.count
 			}
 			
 			let index = input.startIndex
-			let newIndex = index.advancedBy(linepos - cachedLinePos)
+            let newIndex = input.index(index, offsetBy: linepos - cachedLinePos)
 			
 			if line > cachedLinePos {
 				linepos = 0
 			}
 			
-			input = input.substringFromIndex(newIndex)
+			input = input.substring(from: newIndex)
 		}
 		
 		let rep = DeafSharkLexicalRepresentation(tokens: tokens, context: context)
@@ -363,11 +366,11 @@ enum DeafSharkToken: CustomStringConvertible, Equatable {
 
 func ==(lhs: DeafSharkToken, rhs: DeafSharkToken) -> Bool {
 	switch (lhs, rhs) {
-	case (let .IntegerLiteral(x), let .IntegerLiteral(y)):
+	case (let .integerLiteral(x), let .integerLiteral(y)):
 		return x == y
-	case (let .Identifier(x), let .Identifier(y)):
+	case (let .identifier(x), let .identifier(y)):
 		return x == y
-	case (let .FloatLiteral(x), let .FloatLiteral(y)):
+	case (let .floatLiteral(x), let .floatLiteral(y)):
 		return x == y
 	default:
 		return false
